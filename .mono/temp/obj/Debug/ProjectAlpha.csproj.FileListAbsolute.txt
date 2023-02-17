@@ -1,0 +1,11 @@
+C:\Users\Daniel\Documents\ProjectAlpha\.mono\temp\bin\Debug\ProjectAlpha.dll
+C:\Users\Daniel\Documents\ProjectAlpha\.mono\temp\bin\Debug\ProjectAlpha.pdb
+C:\Users\Daniel\Documents\ProjectAlpha\.mono\temp\obj\Debug\ProjectAlpha.csproj.AssemblyReference.cache
+C:\Users\Daniel\Documents\ProjectAlpha\.mono\temp\obj\Debug\ProjectAlpha.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Daniel\Documents\ProjectAlpha\.mono\temp\obj\Debug\ProjectAlpha.AssemblyInfoInputs.cache
+C:\Users\Daniel\Documents\ProjectAlpha\.mono\temp\obj\Debug\ProjectAlpha.AssemblyInfo.cs
+C:\Users\Daniel\Documents\ProjectAlpha\.mono\temp\obj\Debug\ProjectAlpha.csproj.CoreCompileInputs.cache
+C:\Users\Daniel\Documents\ProjectAlpha\.mono\temp\obj\Debug\ProjectAlpha.dll
+C:\Users\Daniel\Documents\ProjectAlpha\.mono\temp\obj\Debug\ProjectAlpha.pdb
+C:\Users\Daniel\Documents\ProjectAlpha\.mono\temp\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Daniel\Documents\ProjectAlpha\.mono\temp\obj\Debug\ProjectAlpha.csproj.CopyComplete
