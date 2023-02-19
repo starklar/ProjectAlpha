@@ -425,7 +425,7 @@ namespace Skirmish
                     ActionSelectionBox.Visible = false;
                     HideAll();
                     //SIGNAL FOR AI TO MAKE DECISIONS
-                    AIMoveDecision(UnitA, UnitAChar);
+                    AIMoveDecision((AIUnitScene) UnitA, UnitB, UnitAChar);
                 }
             }
             else if(CurrentUnit == UnitBChar)
@@ -442,29 +442,284 @@ namespace Skirmish
                     ActionSelectionBox.Visible = false;
                     HideAll();
                     //SIGNAL FOR AI TO MAKE DECISIONS
-                    AIMoveDecision(UnitB, UnitBChar);
+                    AIMoveDecision((AIUnitScene) UnitB, UnitA, UnitBChar);
                 }
             }
         }
 
-        private void AIMoveDecision(UnitScene AIUnit, string userChar)
+        private void AIMoveDecision(AIUnitScene AIUnit, UnitScene Target, string userChar)
         {
-            //TODO: Change later, just chosing attack for now or defend if not in range to attack
-            if(SkillInRange(AIUnit.StandardAttack))
+            string battleAIType = AIUnit.GetBattleAIPattern();
+            BattleSkill skillToUse = null;
+            
+            if(battleAIType == "Basic")
             {
-                UseMove(AIUnit.StandardAttack, userChar);
+                skillToUse = BasicAI(AIUnit, Target, userChar);
+            }
+            else if(battleAIType == "Random")
+            {
+                skillToUse = RandomAI(AIUnit);
+            }
+            else if(battleAIType == "Defensive")
+            {
+                skillToUse = DefensiveAI(AIUnit, Target, userChar);
+            }
+            else if(battleAIType == "Survivor")
+            {
+                //Is supposed to be blank due to this AI type only choosing to guard
             }
             else
             {
-                if(AIUnit == UnitA)
+                //Failcase state
+                skillToUse = BasicAI(AIUnit, Target, userChar);
+            }
+
+            if(skillToUse == null)
+            {
+                Guard(userChar);
+            }
+            else
+            {
+                UseMove(skillToUse, userChar);
+            }
+        }
+
+        private BattleSkill BasicAI(UnitScene AIUnit, UnitScene Target, string userChar)
+        {
+            List<BattleSkill> availableSkills = new List<BattleSkill>(){ AIUnit.StandardAttack };
+
+            foreach(BattleSkill skill in AIUnit.BattleSkills)
+            {
+                if(skill.Type < 7 && AIUnit.CurrMP >= skill.Cost && SkillInRange(skill))
                 {
-                    Guard(UnitAChar);
-                }
-                else
-                {
-                    Guard(UnitBChar);
+                    availableSkills.Add(skill);
                 }
             }
+
+            int bestDamage = int.MinValue;
+            int bestAccuracy = int.MinValue;
+            int bestCritical = int.MinValue;
+            bool canKO = false;
+
+            int targetTerrainDef = 0;
+            int targetTerrainEv = 0;
+            bool targetIsGuarding = false;
+
+            BattleSkill bestSkill = null;
+
+            if(userChar == UnitAChar)
+            {
+                targetTerrainDef = TerrainDefenceBonusB;
+                targetTerrainEv = TerrainEvasionBonusB;
+                targetIsGuarding = GuardingB;
+            }
+            else
+            {
+                targetTerrainDef = TerrainDefenceBonusA;
+                targetTerrainEv = TerrainEvasionBonusA;
+                targetIsGuarding = GuardingA;
+            }
+
+            foreach(BattleSkill skill in availableSkills)
+            {
+                int tempDamage = Global.CalculateDamage(AIUnit, Target, skill, targetTerrainDef, targetIsGuarding);
+                int tempAccuracy = Global.CalculateAccuracy(AIUnit, Target, skill, targetTerrainEv);
+                int tempCritical = Global.CalculateCritical(AIUnit, Target, skill);
+
+                if(tempAccuracy >= 15)
+                {
+                    if(Target.CurrHP <= tempDamage)
+                    {
+                        if(canKO)
+                        {
+                            if(bestAccuracy < tempAccuracy)
+                            {
+                                bestAccuracy = tempAccuracy;
+                                bestCritical = tempCritical;
+                                bestSkill = skill;
+                                canKO = true;
+                            }
+                            else if(bestAccuracy == tempAccuracy)
+                            {
+                                if(bestCritical < tempCritical)
+                                {
+                                    bestAccuracy = tempAccuracy;
+                                    bestCritical = tempCritical;
+                                    bestSkill = skill;
+                                    canKO = true;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            bestAccuracy = tempAccuracy;
+                            bestCritical = tempCritical;
+                            bestSkill = skill;
+                            canKO = true;
+                        }
+                    }
+                    else if(Target.CurrHP <= tempDamage * 3 && tempCritical >= 50)
+                    {
+                        if(canKO)
+                        {
+                            if(bestAccuracy < tempAccuracy)
+                            {
+                                bestAccuracy = tempAccuracy;
+                                bestCritical = tempCritical;
+                                bestSkill = skill;
+                                canKO = true;
+                            }
+                            else if(bestAccuracy == tempAccuracy)
+                            {
+                                if(bestCritical < tempCritical)
+                                {
+                                    bestAccuracy = tempAccuracy;
+                                    bestCritical = tempCritical;
+                                    bestSkill = skill;
+                                    canKO = true;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            bestAccuracy = tempAccuracy;
+                            bestCritical = tempCritical;
+                            bestSkill = skill;
+                            canKO = true;
+                        }
+                    }
+                    else if(!canKO)
+                    {
+                        if(bestDamage < tempDamage)
+                        {
+                            bestAccuracy = tempAccuracy;
+                            bestCritical = tempCritical;
+                            bestSkill = skill;
+                            canKO = false;
+                        }
+                        else if(bestDamage == tempDamage)
+                        {
+                            if(bestAccuracy < tempAccuracy)
+                            {
+                                bestAccuracy = tempAccuracy;
+                                bestCritical = tempCritical;
+                                bestSkill = skill;
+                                canKO = false;
+                            }
+                            else if(bestAccuracy == tempAccuracy)
+                            {
+                                if(bestCritical < tempCritical)
+                                {
+                                    bestAccuracy = tempAccuracy;
+                                    bestCritical = tempCritical;
+                                    bestSkill = skill;
+                                    canKO = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return bestSkill;
+        }
+
+        private BattleSkill RandomAI(UnitScene AIUnit)
+        {
+            List<BattleSkill> availableSkills = new List<BattleSkill>(){ AIUnit.StandardAttack };
+
+            foreach(BattleSkill skill in AIUnit.BattleSkills)
+            {
+                if(skill.Type < 7 && AIUnit.CurrMP >= skill.Cost && SkillInRange(skill))
+                {
+                    availableSkills.Add(skill);
+                }
+            }
+
+            var rand = new Random();
+
+            int randomMove = rand.Next(0, availableSkills.Count);
+
+            return availableSkills[randomMove];
+        }
+
+        private BattleSkill DefensiveAI(UnitScene AIUnit, UnitScene Target, string userChar)
+        {
+            List<BattleSkill> availableSkills = new List<BattleSkill>(){ AIUnit.StandardAttack };
+
+            foreach(BattleSkill skill in AIUnit.BattleSkills)
+            {
+                if(skill.Type < 7 && AIUnit.CurrMP >= skill.Cost && SkillInRange(skill))
+                {
+                    availableSkills.Add(skill);
+                }
+            }
+
+            int bestAccuracy = int.MinValue;
+            int bestCritical = int.MinValue;
+            bool canKO = false;
+
+            int targetTerrainDef = 0;
+            int targetTerrainEv = 0;
+            bool targetIsGuarding = false;
+
+            BattleSkill bestSkill = null;
+
+            if(userChar == UnitAChar)
+            {
+                targetTerrainDef = TerrainDefenceBonusB;
+                targetTerrainEv = TerrainEvasionBonusB;
+                targetIsGuarding = GuardingB;
+            }
+            else
+            {
+                targetTerrainDef = TerrainDefenceBonusA;
+                targetTerrainEv = TerrainEvasionBonusA;
+                targetIsGuarding = GuardingA;
+            }
+
+            foreach(BattleSkill skill in availableSkills)
+            {
+                int tempDamage = Global.CalculateDamage(AIUnit, Target, skill, targetTerrainDef, targetIsGuarding);
+                int tempAccuracy = Global.CalculateAccuracy(AIUnit, Target, skill, targetTerrainEv);
+                int tempCritical = Global.CalculateCritical(AIUnit, Target, skill);
+
+                if(tempAccuracy >= 15)
+                {
+                    if(Target.CurrHP <= tempDamage)
+                    {
+                        if(canKO)
+                        {
+                            if(bestAccuracy < tempAccuracy)
+                            {
+                                bestAccuracy = tempAccuracy;
+                                bestCritical = tempCritical;
+                                bestSkill = skill;
+                                canKO = true;
+                            }
+                            else if(bestAccuracy == tempAccuracy)
+                            {
+                                if(bestCritical < tempCritical)
+                                {
+                                    bestAccuracy = tempAccuracy;
+                                    bestCritical = tempCritical;
+                                    bestSkill = skill;
+                                    canKO = true;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            bestAccuracy = tempAccuracy;
+                            bestCritical = tempCritical;
+                            bestSkill = skill;
+                            canKO = true;
+                        }
+                    }
+                }
+            }
+
+            return bestSkill;
         }
 
         private void HideAll()

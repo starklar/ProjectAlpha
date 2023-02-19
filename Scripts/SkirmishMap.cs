@@ -1004,8 +1004,6 @@ namespace Skirmish
 
                                 if(potentialDamage >= targetUnit.CurrHP)
                                 {
-
-                                    Console.WriteLine("CAN KILL");
                                     if(canKO == false || IsBetterAttackingPosition(targetRange, r.Range, canCounter, potentialDefence, bestDefence, potentialEvasion, bestEvasion, potentialAccuracy, bestAccuracy))
                                     {
                                         bestAccuracy = potentialAccuracy;
@@ -1056,7 +1054,6 @@ namespace Skirmish
                         }
                         else if(!inRange)
                         {
-                            //TODO: CHANGE THIS TO CALCULATE PATH VALUE
                             double tempPosDist = GetStepsRequired(ai, pos.X, pos.Y, shortestDist);
 
                             if(shortestDist > tempPosDist)
@@ -1091,8 +1088,6 @@ namespace Skirmish
                 }
             }
 
-            //TODO: Fix
-
             //Console.WriteLine("\nFinal Target Location: X: " + finalTarget.X + " y: " + finalTarget.Y);
             string action = "Wait";
             if(inRange)
@@ -1108,14 +1103,15 @@ namespace Skirmish
             {
                 if(can_counter == true)
                 {
-                    if(potential_defence >= best_defence)
+                    if(potential_defence > best_defence)
                     {
-                        if(potential_evasion >= best_evasion)
+                        return true;
+                    }
+                    else if(potential_evasion > best_evasion)
+                    {
+                        if(potential_defence >= best_defence)
                         {
-                            if(potential_accuracy > best_accuracy)
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
                 }
