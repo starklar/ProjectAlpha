@@ -18,8 +18,8 @@ namespace Skirmish
             //HUD.Position = new Vector2(864f, 0f);
             //HUD.Position = new Vector2(864f, 480f);
 
-            this.GetParent().Connect("TerrainCheckSignal", this, "UpdateLabels");
-            this.GetParent().Connect("ShowTerrainHUDSignal", this, "Show");
+            this.GetParent().GetParent().Connect("TerrainCheckSignal", this, "UpdateLabels");
+            this.GetParent().GetParent().Connect("ShowTerrainHUDSignal", this, "Show");
         }
 
         private void UpdateLabels(string tile_type, int defence_bonus, int evasion_bonus)

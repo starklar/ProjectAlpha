@@ -3,6 +3,7 @@ using Godot;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Main;
 
 namespace Skirmish
 {
@@ -104,6 +105,8 @@ namespace Skirmish
         private List<Pos> PlayerUnitLocations;
         private List<Pos> EnemyUnitLocations;
         private List<Pos> OtherUnitLocations;
+
+        private SupportSkill CurrentSupportSkill;
         
         public SkirmishMap(string map_name, int map_size_x, int map_size_y)
         {
@@ -343,7 +346,7 @@ namespace Skirmish
             SelectableAttackTiles = new List<Pos>();
             SpawnAttackTiles(unit.StandardAttack.MinRange, unit.StandardAttack.MaxRange, unit.CurrX, unit.CurrY, ref SelectableAttackTiles);
 
-            foreach(BattleSkill skill in unit.BattleSkills)
+            foreach(ActiveSkill skill in unit.ActiveSkills)
             {
                 if(skill.Type >= 7 || unit.CurrMP < skill.Cost)
                 {
@@ -358,21 +361,24 @@ namespace Skirmish
             return SelectableAttackTiles;
         }
 
-        public List<Pos> GetSupportRange(UnitScene unit)
+        public List<Pos> GetSupportRange(UnitScene unit, string skill_name)
         {
             SelectableSupportTiles = new List<Pos>();
-            foreach(BattleSkill skill in unit.BattleSkills)
+            
+            if(unit.ActiveSkills.Exists(bs => bs.Name == skill_name))
             {
-                if(skill.Type < 7 || unit.CurrMP < skill.Cost)
-                {
-                    continue;
-                }
-
-                int minRange = skill.MinRange;
-                int maxRange = skill.MaxRange;
-
-                SpawnSupportTiles(minRange, maxRange, unit.CurrX, unit.CurrY, ref SelectableSupportTiles);
+                CurrentSupportSkill = (SupportSkill) unit.ActiveSkills.Find(bs => bs.Name == skill_name);
             }
+            else
+            {
+                //Error state
+            }
+            
+            int minRange = CurrentSupportSkill.MinRange;
+            int maxRange = CurrentSupportSkill.MaxRange;
+
+            SpawnSupportTiles(minRange, maxRange, unit.CurrX, unit.CurrY, ref SelectableSupportTiles);
+
             return SelectableSupportTiles;
         }
 
@@ -381,9 +387,142 @@ namespace Skirmish
             return SelectableAttackTiles.Exists(t => t.X == x && t.Y == y);
         }
 
-        public bool IsInSupportRange(int x, int y)
+        public bool IsInSupportRange(int x, int y, ref UnitScene casting_user)
         {
-            return SelectableSupportTiles.Exists(t => t.X == x && t.Y == y);
+            int target = CurrentSupportSkill.Target;
+            int team = casting_user.Team;
+            bool applicable = false;
+
+            if(SelectableSupportTiles.Exists(t => t.X == x && t.Y == y))
+            {
+                if(target == 0)
+                {
+                    if(Map[x, y].CurrUnit != null)
+                    {
+                        applicable = Map[x, y].CurrUnit.ApplyEffect(ref casting_user, CurrentSupportSkill);
+                    }
+                }
+                else if(target == 1)
+                {
+                    if(team == 1)
+                    {
+                        if(Map[x, y].CurrUnit != null)
+                        {
+                            if(Map[x, y].CurrUnit.Team == 1)
+                            {
+                                applicable = Map[x, y].CurrUnit.ApplyEffect(ref casting_user, CurrentSupportSkill);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(Map[x, y].CurrUnit != null)
+                        {
+                            if(Map[x, y].CurrUnit.Team == 0 || Map[x, y].CurrUnit.Team == 2)
+                            {
+                                applicable = Map[x, y].CurrUnit.ApplyEffect(ref casting_user, CurrentSupportSkill);
+                            }
+                        }
+                    }
+                }
+                else if(target == 2)
+                {
+                    if(team == 1)
+                    {
+                        if(Map[x, y].CurrUnit != null)
+                        {
+                            if(Map[x, y].CurrUnit.Team == 0 || Map[x, y].CurrUnit.Team == 2)
+                            {
+                                applicable = Map[x, y].CurrUnit.ApplyEffect(ref casting_user, CurrentSupportSkill);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(Map[x, y].CurrUnit != null)
+                        {
+                            if(Map[x, y].CurrUnit.Team == 1)
+                            {
+                                applicable = Map[x, y].CurrUnit.ApplyEffect(ref casting_user, CurrentSupportSkill);
+                            }
+                        }
+                    }
+                }
+                else if(target == 4)
+                {
+                    foreach(Pos p in SelectableSupportTiles)
+                    {
+                        Console.WriteLine("BBBBBBBBBBBBBBBBBBBB");
+                        if(Map[p.X, p.Y].CurrUnit != null)
+                        {
+                            Console.WriteLine("CCCCCCCCCCCCCCCCC");
+                            if(team == 1)
+                            {
+                                if(Map[p.X, p.Y].CurrUnit.Team == 0 || Map[p.X, p.Y].CurrUnit.Team == 2)
+                                {
+                                    if(Map[p.X, p.Y].CurrUnit.ApplyEffect(ref casting_user, CurrentSupportSkill))
+                                    {
+                                        applicable = true;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("DDDDDDDDDDDDDDDDDDDD");
+                                if(Map[p.X, p.Y].CurrUnit.Team == 1)
+                                {
+                                    Console.WriteLine("EEEEEEEEEEEEEEEEEEEEEEEE");
+                                    if(Map[p.X, p.Y].CurrUnit.ApplyEffect(ref casting_user, CurrentSupportSkill))
+                                    {
+                                        Console.WriteLine("AAAAAAAAAAAAAAAA");
+                                        applicable = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return applicable;
+                }
+                else if(target == 3 || target == 5)
+                {
+                    foreach(Pos p in SelectableSupportTiles)
+                    {
+                        if(Map[p.X, p.Y].CurrUnit != null)
+                        {
+                            if(team == 1)
+                            {
+                                if(Map[p.X, p.Y].CurrUnit.Team == 1)
+                                {
+                                    if(Map[p.X, p.Y].CurrUnit.ApplyEffect(ref casting_user, CurrentSupportSkill))
+                                    {
+                                        applicable = true;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if(Map[p.X, p.Y].CurrUnit.Team == 0 || Map[p.X, p.Y].CurrUnit.Team == 2)
+                                {
+                                    if(Map[p.X, p.Y].CurrUnit.ApplyEffect(ref casting_user, CurrentSupportSkill))
+                                    {
+                                        applicable = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return applicable;
+                }
+            }
+
+            if(applicable)
+            {
+                casting_user.CurrMP -= CurrentSupportSkill.Cost;
+            }
+
+            return applicable;
         }
 
         private void CalculateAIAttackRange(AIUnitScene unit, int steps, int curr_x, int curr_y, ref List<Pos> current_list)
@@ -401,7 +540,7 @@ namespace Skirmish
             List<Pos> attackTiles = new List<Pos>();
             SpawnAttackTiles(unit.StandardAttack.MinRange, unit.StandardAttack.MaxRange, curr_x, curr_y, ref attackTiles);
 
-            foreach(BattleSkill skill in unit.BattleSkills)
+            foreach(ActiveSkill skill in unit.ActiveSkills)
             {
                 if(skill.Type >= 7 || skill.Cost > unit.CurrMP)
                 {
@@ -460,8 +599,8 @@ namespace Skirmish
             }
 
             List<Pos> supportTiles = new List<Pos>();
-            //SpawnSupportTiles(0, min_range, max_range, curr_x, curr_y, ref support_tiles);
-            foreach(BattleSkill skill in unit.BattleSkills)
+            
+            foreach(ActiveSkill skill in unit.ActiveSkills)
             {
                 if(skill.Type < 7 || skill.Cost > unit.CurrMP)
                 {
@@ -807,7 +946,7 @@ namespace Skirmish
                 skillRange.Add(new SkillsAtRange(x, new List<BattleSkill>() { ai.StandardAttack }));
             }
 
-            foreach(BattleSkill skill in ai.BattleSkills)
+            foreach(ActiveSkill skill in ai.ActiveSkills)
             {
                 if(skill.Type >= 7 || ai.CurrMP < skill.Cost)
                 {
@@ -818,11 +957,11 @@ namespace Skirmish
                 {
                     if(!skillRange.Exists(r => r.Range == x))
                     {
-                        skillRange.Add(new SkillsAtRange(x, new List<BattleSkill>() { skill }));
+                        skillRange.Add(new SkillsAtRange(x, new List<BattleSkill>() { (BattleSkill) skill }));
                     }
                     else
                     {
-                        skillRange.Find(r => r.Range == x).UsableSkills.Add(skill);
+                        skillRange.Find(r => r.Range == x).UsableSkills.Add((BattleSkill) skill);
                     }
                 }
             }
@@ -931,7 +1070,7 @@ namespace Skirmish
                     }
                 }
 
-                foreach(BattleSkill skill in targetUnit.BattleSkills)
+                foreach(ActiveSkill skill in targetUnit.ActiveSkills)
                 {
                     if(skill.Type >= 7 || ai.CurrMP < skill.Cost)
                     {
@@ -1107,9 +1246,9 @@ namespace Skirmish
                     {
                         return true;
                     }
-                    else if(potential_evasion > best_evasion)
+                    else if(potential_defence == best_defence)
                     {
-                        if(potential_defence >= best_defence)
+                        if(potential_evasion > best_evasion)
                         {
                             return true;
                         }
@@ -1120,6 +1259,20 @@ namespace Skirmish
                     if(potential_accuracy > best_accuracy)
                     {
                         return true;
+                    }
+                    else if(potential_accuracy == best_accuracy)
+                    {
+                        if(potential_defence > best_defence)
+                    {
+                        return true;
+                    }
+                    else if(potential_defence == best_defence)
+                    {
+                        if(potential_evasion > best_evasion)
+                        {
+                            return true;
+                        }
+                    }
                     }
                 }
             }

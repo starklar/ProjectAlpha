@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Skirmish
+namespace Main
 {
     public abstract class Skill
     {

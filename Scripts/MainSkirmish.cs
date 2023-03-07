@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using UnitInformation;
+using Main;
 
 using GameData;
 
@@ -108,11 +109,12 @@ namespace Skirmish
         {
             PlayerUnits = (PlayerUnits) this.GetNode("PlayerData").Call("GetPlayerUnits");
             
-            AddChild(TerrainHUDScene.Instance());
-            AddChild(UnitHUDScene.Instance());
-            AddChild(ActionMenuScene.Instance());
+            this.GetNode<Camera2D>("Camera2D").AddChild(TerrainHUDScene.Instance());
+            this.GetNode<Camera2D>("Camera2D").AddChild(UnitHUDScene.Instance());
+            this.GetNode<Camera2D>("Camera2D").AddChild(ActionMenuScene.Instance());
+            //this.GetNode<Camera2D>("Camera2D").AddChild(CombatScene.Instance());
             AddChild(CombatScene.Instance());
-            AddChild(MapMenuScene.Instance());
+            this.GetNode<Camera2D>("Camera2D").AddChild(MapMenuScene.Instance());
 
             var cursor = GetNode<Cursor>("Cursor");
 
@@ -132,13 +134,15 @@ namespace Skirmish
             EmitSignal("ShowActionMenuSignal", "hide");
 
             GetNode<Cursor>("Cursor").Connect("CursorMovedSignal", this, "TerrainCheck");
-            GetNode<ActionMenuScene>("ActionMenuScene").Connect("UnitUndoMoveSignal", this, "SelectedUnitUndoMove");
-            GetNode<ActionMenuScene>("ActionMenuScene").Connect("UnitWaitSignal", this, "SelectedUnitWait");
-            GetNode<ActionMenuScene>("ActionMenuScene").Connect("SpawnAttackTilesSignal", this, "SpawnAttackTiles");
-            GetNode<ActionMenuScene>("ActionMenuScene").Connect("EnableMapMovementSignal", this, "EnableMapMovement");
+            this.GetNode<Camera2D>("Camera2D").GetNode<ActionMenuScene>("ActionMenuScene").Connect("UnitUndoMoveSignal", this, "SelectedUnitUndoMove");
+            this.GetNode<Camera2D>("Camera2D").GetNode<ActionMenuScene>("ActionMenuScene").Connect("UnitWaitSignal", this, "SelectedUnitWait");
+            this.GetNode<Camera2D>("Camera2D").GetNode<ActionMenuScene>("ActionMenuScene").Connect("SpawnAttackTilesSignal", this, "SpawnAttackTiles");
+            this.GetNode<Camera2D>("Camera2D").GetNode<ActionMenuScene>("ActionMenuScene").Connect("SpawnSupportTilesSignal", this, "SpawnSupportTiles");
+            this.GetNode<Camera2D>("Camera2D").GetNode<ActionMenuScene>("ActionMenuScene").Connect("EnableMapMovementSignal", this, "EnableMapMovement");
+            //this.GetNode<Camera2D>("Camera2D").GetNode<CombatScene>("CombatScene").Connect("EndCombatSignal", this, "EndCombat");
             GetNode<CombatScene>("CombatScene").Connect("EndCombatSignal", this, "EndCombat");
-            GetNode<MapMenuScene>("MapMenuScene").Connect("ReturnToMapSignal", this, "EnableMapMovement");
-            GetNode<MapMenuScene>("MapMenuScene").Connect("EndTurnSignal", this, "EndTurn");
+            this.GetNode<Camera2D>("Camera2D").GetNode<MapMenuScene>("MapMenuScene").Connect("ReturnToMapSignal", this, "EnableMapMovement");
+            this.GetNode<Camera2D>("Camera2D").GetNode<MapMenuScene>("MapMenuScene").Connect("EndTurnSignal", this, "EndTurn");
         }
 
         private void TerrainCheck(int x, int y)
@@ -172,42 +176,6 @@ namespace Skirmish
             animatedSprite.Play();
         }
 
-        /*private void CreateUnit(int team, string unit_name, int start_x, int start_y)
-        {
-            string team_string = "";
-            if(team == 0)
-            {
-                team_string = "PlayerTeam";
-            }
-            else if(team == 1)
-            {
-                team_string = "EnemyTeam";
-            }
-            else if(team == 2)
-            {
-                team_string = "OtherTeam";
-            }
-
-            PackedScene unitScene = (PackedScene) ResourceLoader.Load("res://Units/" + unit_name + "Scene.tscn");
-            var unit = (UnitScene)unitScene.Instance();
-            //unit.Create(MapScale, start_x, start_y, unit_name, team);
-            Map.PlaceUnit(start_x, start_y, unit);
-            GetNode<Node>(team_string).AddChild(unit);
-
-            if(team == 0)
-            {
-                PlayerTeam.Add(unit);
-            }
-            else if(team == 1)
-            {
-                EnemyTeam.Add(unit);
-            }
-            else if(team == 2)
-            {
-                OtherTeam.Add(unit);
-            }
-        }*/
-
         //TESTING PURPOSE ONLY vvv
         private void CreatePlayers()
         {
@@ -232,23 +200,6 @@ namespace Skirmish
                 GetNode<Node>("PlayerTeam").AddChild(playerUnit);
                 PlayerTeam.Add(playerUnit);
             }
-            //For testing purposes only
-            /*int player_team_size = 1;
-
-            for(int i = 0; i < player_team_size; i++)
-            {
-                PackedScene playerScene = (PackedScene) ResourceLoader.Load("res://Units/FlynnScene.tscn");
-                var playerUnit = (UnitScene)playerScene.Instance();
-                int[] statsList = { 15, 15, 5, 5, 8, 6, 4, 3 };
-                string[] resList = { "--", "--", "--", "--", "--", "--", "--" };
-                int[] affList = { 1, 0, 4, 4, 4, 4, 2, 3, 1 };
-                BattleSkill atk = new BattleSkill("Attack", 0, 0, 2, 1, 3, 80, 5, (1, 1), false, null);
-                BattleSkill[] bSkillList = {};
-                PassiveSkill[] pSkillList = {};
-                playerUnit.Create(8 - i * 2, 5 + i * 2, "Flynn", 0, 0, 3, 0, statsList, atk, bSkillList, pSkillList, resList, affList);
-
-                PlayerTeam.Add(playerUnit);
-            }*/
         }
 
         private void CreateEnemies()
@@ -263,8 +214,8 @@ namespace Skirmish
                 int[] statsList = { 10, 5, 4, 6, 3, 3, 3, 3 };
                 string[] resList = { "Wk", "Rs", "Wk", "Wk", "--", "Nu", "--" };
                 int[] affList = { -1, -3, 0, 0, 0, 3, 0, 0, 0 };
-                BattleSkill atk = new BattleSkill("Attack", "1 hit Physical Attack", 0, 0, 2, 1, 1, 1, 80, 0, (1, 1), false, null);
-                BattleSkill[] bSkills = {};
+                BattleSkill atk = new BattleSkill("Attack", "1 hit Physical attack.", 0, 0, 1, 1, 3, 80, 0, (1, 1), false, null);
+                ActiveSkill[] bSkills = {};
                 PassiveSkill[] pSkills = {};
                 enemyUnit.Create(9 - i * 2, 8 - i * 2, "Slime", 1, 0, 2, 0, statsList, atk, bSkills, pSkills, resList, affList, "Basic", "Basic");
                 Map.PlaceUnit(9 - i * 2, 8 - i * 2, enemyUnit);
@@ -312,35 +263,6 @@ namespace Skirmish
             }
         }
 
-        /*private void SpawnAttackTiles(int curr_range, int max_range, int curr_x, int curr_y)
-        {
-            if (!SelectableAttackTiles.Contains((curr_x, curr_y)))
-            {
-                SelectableAttackTiles.Add((curr_x, curr_y));
-            }
-
-            if (curr_range > max_range)
-            {
-                return;
-            }
-            foreach ((int, int) d in Directions)
-            {
-                int new_x = curr_x + d.Item1;
-                int new_y = curr_y + d.Item2;
-
-                if (new_x < 0 || new_x >= MaxX)
-                {
-                    continue;
-                }
-                if (new_y < 0 || new_y >= MaxY)
-                {
-                    continue;
-                }
-                
-                SpawnAttackTiles(curr_range + 1, max_range, new_x, new_y);
-            }
-        }*/
-
         private void CheckEnemyRange()
         {
             RemoveEnemyRangeTiles();
@@ -360,10 +282,6 @@ namespace Skirmish
         {
             var t = GetNode<Node>("Tiles");
 
-            //TODO: REPLACE
-            //int min_range = 1;
-            //int max_range = 1;
-
             foreach(Pos s in Map.GetAttackRange(SelectedUnit))
             {
                 var selectable = new Sprite();
@@ -375,61 +293,25 @@ namespace Skirmish
                 t.AddChild(selectable);
             }
         }
-        /*private void SpawnSupportTiles(int remaining_range, int curr_x, int curr_y)
-        {
-            if (!SelectableAttackTiles.Contains((curr_x, curr_y)))
-            {
-                SelectableAttackTiles.Add((curr_x, curr_y));
-            }
 
-            if (remaining_range <= 0)
-            {
-                return;
-            }
-            foreach ((int, int) d in Directions)
-            {
-                int new_x = curr_x + d.Item1;
-                int new_y = curr_y + d.Item2;
-
-                if (new_x < 0 || new_x >= MaxX)
-                {
-                    continue;
-                }
-                if (new_y < 0 || new_y >= MaxY)
-                {
-                    continue;
-                }
-                
-                SpawnSupportTiles(remaining_range - 1, new_x, new_y);
-            }
-        }*/
-        private void SpawnSupportTiles()
+        private void SpawnSupportTiles(string skill_name)
         {
             var t = GetNode<Node>("Tiles");
 
-            //TODO: REPLACE
-            //int min_range = 1;
-            //int max_range = 1;
-
-            //SpawnSupportTiles(range, SelectedUnit.CurrX, SelectedUnit.CurrY);
-
-            foreach(Pos s in Map.GetSupportRange(SelectedUnit))
+            foreach(Pos s in Map.GetSupportRange(SelectedUnit, skill_name))
             {
                 var selectable = new Sprite();
                 selectable.Texture = (Texture) GD.Load(SupportRangeTile);
                 selectable.Position = new Vector2(s.X * Global.MAP_SCALE + Global.MAP_SCALE / 2, s.Y * Global.MAP_SCALE + Global.MAP_SCALE / 2);
                 selectable.ZIndex = 1;
                 selectable.Scale = new Vector2(2, 2);
-                selectable.Modulate = new Color(new Color(0, 255, 0), 0.1f);
+                selectable.Modulate = new Color(new Color(0, 205, 0), 0.1f);
                 t.AddChild(selectable);
             }
         }
 
         private void RemoveRangeTiles()
         {
-            //SelectableMoveTiles.Clear();
-            //SelectableAttackTiles.Clear();
-            //SelectableSupportTiles.Clear();
             var t = GetNode<Node>("Tiles");
             foreach(Node tile in t.GetChildren())
             {
@@ -565,9 +447,10 @@ namespace Skirmish
             {
                 CPUMapAI();
             }
+
+            this.GetNode<Camera2D>("Camera2D").Current = true;
         }
 
-        //TODO: FIX STUPID SIGNALS PROBLEM
         private void CPUMapAI()
         {
             if(Phase == 1)
@@ -590,24 +473,15 @@ namespace Skirmish
                     int endX = move.PathToPos[idx].X;
                     int endY = move.PathToPos[idx].Y;
 
-                    /*while(Map.GetUnit(endX, endY) != null && Map.GetUnit(endX, endY) != enemy)
-                    {
-                        idx --;
-                        endX = move.PathToPos[idx].X;
-                        endY = move.PathToPos[idx].Y;
-                    }*/
-
                     MoveUnit(enemy, endX, endY);
 
                     if(move.Action == "Attack")
                     {
-                        Console.Write("ENTER COMBAT");
                         EnterCombat(enemy, Map.GetUnit(move.TargetPos.X, move.TargetPos.Y));
                         return;
                     }
                     else if(move.Action == "Wait")
                     {
-                        Console.Write("WAIT");
                         Wait(enemy, endX, endY);
                     }
                 }
@@ -801,6 +675,7 @@ namespace Skirmish
                             EmitSignal("GetSupportSkillsSignal", SelectedUnit);
                             EmitSignal("ShowActionMenuSignal", "main");
                             RemoveRangeTiles();
+                            SetProcessInput(false);
                         }
                     }
                 }
@@ -819,8 +694,17 @@ namespace Skirmish
                 }
                 else if(Mode == 3)
                 {
-                    if(Map.IsInSupportRange(CurrX, CurrY))
+                    if(Map.IsInSupportRange(CurrX, CurrY, ref SelectedUnit))
                     {
+                        if(Map.GetUnit(CurrX, CurrY) != null)
+                        {
+                            EmitSignal("UnitCheckSignal", Map.GetUnit(CurrX, CurrY));
+                        }
+                        
+                        Wait(SelectedUnit, SelectedUnit.CurrX, SelectedUnit.CurrY);
+                        RemoveRangeTiles();
+                        SelectedUnit = null;
+                        Mode = 0;
                     }
                 }
             }
@@ -845,6 +729,18 @@ namespace Skirmish
                 else if(Mode == 2)
                 {
                     EmitSignal("ShowActionMenuSignal", "main");
+                    EmitSignal("MoveCursorSignal", SelectedUnit.CurrX, SelectedUnit.CurrY);
+                    RemoveRangeTiles();
+                    CurrX = SelectedUnit.CurrX;
+                    CurrY = SelectedUnit.CurrY;
+                    Mode = 1;
+                    TerrainCheck(CurrX, CurrY);
+                    Cursor.SetProcessInput(false);
+                    SetProcessInput(false);
+                }
+                else if(Mode == 3)
+                {
+                    EmitSignal("ShowActionMenuSignal", "support");
                     EmitSignal("MoveCursorSignal", SelectedUnit.CurrX, SelectedUnit.CurrY);
                     RemoveRangeTiles();
                     CurrX = SelectedUnit.CurrX;

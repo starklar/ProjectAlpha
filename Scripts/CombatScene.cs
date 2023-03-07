@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using Main;
 
 namespace Skirmish
 {
@@ -36,6 +37,7 @@ namespace Skirmish
         private TextureRect AttackElement;
         private Label AttackName;
         private Label AttackAffinity;
+        private List<BattleSkill> UsableSkills = new List<BattleSkill>(4);
         private List<Label> SkillNames = new List<Label>(4);
         private List<TextureRect> SkillElements = new List<TextureRect>(4);
         private List<Label> SkillAffinity = new List<Label>(4);
@@ -142,6 +144,8 @@ namespace Skirmish
 
         private void StartCombat(int distance, UnitScene unitA, int tileADef, int tileAEv, UnitScene unitB, int tileBDef, int tileBEv)
         {
+            UsableSkills = new List<BattleSkill>(4);
+
             Distance = distance;
             
             UnitA = unitA;
@@ -229,6 +233,7 @@ namespace Skirmish
             }
 
             Visible = true;
+            this.GetNode<Camera2D>("Camera2D").Current = true;
 
             ChangePhase();
         }
@@ -270,9 +275,16 @@ namespace Skirmish
             AttackAffinity.Text += unit.ElementAff[unit.StandardAttack.Type];
 
             int skillIndex = 0;
-            foreach(BattleSkill skill in unit.BattleSkills)
+            foreach(ActiveSkill skill in unit.ActiveSkills)
             {
-                if(SkillInRange(skill))
+                if(skill.Type >= 7)
+                {
+                    continue;
+                }
+
+                UsableSkills.Add((BattleSkill) skill);
+
+                if(SkillInRange((BattleSkill) skill))
                 {
                     SkillNames[skillIndex].Text = skill.Name;
                 }
@@ -488,7 +500,7 @@ namespace Skirmish
         {
             List<BattleSkill> availableSkills = new List<BattleSkill>(){ AIUnit.StandardAttack };
 
-            foreach(BattleSkill skill in AIUnit.BattleSkills)
+            foreach(BattleSkill skill in AIUnit.ActiveSkills)
             {
                 if(skill.Type < 7 && AIUnit.CurrMP >= skill.Cost && SkillInRange(skill))
                 {
@@ -558,7 +570,7 @@ namespace Skirmish
                             canKO = true;
                         }
                     }
-                    else if(Target.CurrHP <= tempDamage * 3 && tempCritical >= 50)
+                    else if(Target.CurrHP <= tempDamage * 2 && tempCritical >= 50)
                     {
                         if(canKO)
                         {
@@ -628,7 +640,7 @@ namespace Skirmish
         {
             List<BattleSkill> availableSkills = new List<BattleSkill>(){ AIUnit.StandardAttack };
 
-            foreach(BattleSkill skill in AIUnit.BattleSkills)
+            foreach(BattleSkill skill in AIUnit.ActiveSkills)
             {
                 if(skill.Type < 7 && AIUnit.CurrMP >= skill.Cost && SkillInRange(skill))
                 {
@@ -647,7 +659,7 @@ namespace Skirmish
         {
             List<BattleSkill> availableSkills = new List<BattleSkill>(){ AIUnit.StandardAttack };
 
-            foreach(BattleSkill skill in AIUnit.BattleSkills)
+            foreach(BattleSkill skill in AIUnit.ActiveSkills)
             {
                 if(skill.Type < 7 && AIUnit.CurrMP >= skill.Cost && SkillInRange(skill))
                 {
@@ -801,96 +813,89 @@ namespace Skirmish
                 return;
             }
 
-            if(skill.Target == 2)
+            UnitScene target;
+            int targetTileDefenceBonus;
+            int targetTileEvasionBonus;
+            bool targetIsGuarding;
+            int direction = 1;
+            if (userChar == UnitAChar){
+                target = UnitB;
+                targetTileDefenceBonus = TerrainDefenceBonusB;
+                targetTileEvasionBonus = TerrainEvasionBonusB;
+                targetIsGuarding = GuardingB;
+                direction = 1;
+            }
+            else{
+                target = UnitA;
+                targetTileDefenceBonus = TerrainDefenceBonusA;
+                targetTileEvasionBonus = TerrainEvasionBonusA;
+                targetIsGuarding = GuardingA;
+                direction = -1;
+            }
+
+            int total_damage = Global.CalculateDamage(user, target, skill, targetTileDefenceBonus, targetIsGuarding);
+            
+            user.CurrMP -= skill.Cost;
+
+            var rand = new Random();
+
+            int total_accuracy = Global.CalculateAccuracy(user, target, skill, targetTileEvasionBonus);
+
+            int max_hits = rand.Next(skill.Hits.Item2);
+            
+            if(max_hits < skill.Hits.Item1)
             {
-                UnitScene target;
-                int targetTileDefenceBonus;
-                int targetTileEvasionBonus;
-                bool targetIsGuarding;
-                int direction = 1;
-                if (userChar == UnitAChar){
-                    target = UnitB;
-                    targetTileDefenceBonus = TerrainDefenceBonusB;
-                    targetTileEvasionBonus = TerrainEvasionBonusB;
-                    targetIsGuarding = GuardingB;
-                    direction = 1;
-                }
-                else{
-                    target = UnitA;
-                    targetTileDefenceBonus = TerrainDefenceBonusA;
-                    targetTileEvasionBonus = TerrainEvasionBonusA;
-                    targetIsGuarding = GuardingA;
-                    direction = -1;
-                }
+                max_hits = skill.Hits.Item1;
+            }
 
-                int total_damage = Global.CalculateDamage(user, target, skill, targetTileDefenceBonus, targetIsGuarding);
-                
-                user.CurrMP -= skill.Cost;
-
-                var rand = new Random();
-
-                int total_accuracy = Global.CalculateAccuracy(user, target, skill, targetTileEvasionBonus);
-
-                int max_hits = rand.Next(skill.Hits.Item2);
-                
-                if(max_hits < skill.Hits.Item1)
+            for(int i = 0; i < max_hits; i++)
+            {
+                if (total_accuracy > rand.Next(100))
                 {
-                    max_hits = skill.Hits.Item1;
-                }
+                    int total_crit = Global.CalculateCritical(user, target, skill);
 
-                for(int i = 0; i < max_hits; i++)
-                {
-                    if (total_accuracy > rand.Next(100))
+                    if(target.ElementRes[skill.Type] == Global.RESISTANCE_LEVELS[2])
                     {
-                        int total_crit = Global.CalculateCritical(user, target, skill);
-
-                        if(target.ElementRes[skill.Type] == Global.RESISTANCE_LEVELS[2])
-                        {
-                            total_crit = total_crit / 2;
-                        }
-
-                        if(total_crit > rand.Next(100))
-                        {
-                            total_damage *= 3;
-                            SpeedBonus += 2 * direction;
-                        }
-
-                        target.CurrHP -= total_damage;
-
-                        if(target.ElementRes[skill.Type] == Global.RESISTANCE_LEVELS[2])
-                        {
-                            SpeedBonus -= 1 * direction;
-                        }
-                        else if(target.ElementRes[skill.Type] == Global.RESISTANCE_LEVELS[0])
-                        {
-                            SpeedBonus += 2 * direction;
-                        }
-                        else if(target.ElementRes[skill.Type] == Global.RESISTANCE_LEVELS[3])
-                        {
-                            SpeedBonus += 2 * direction;
-                        }
+                        total_crit = total_crit / 2;
                     }
-                    else
+
+                    if(total_crit > rand.Next(100))
                     {
-                        SpeedBonus -= 2 * direction;
+                        total_damage *= 2;
+                        SpeedBonus += 2 * direction;
                     }
-                }
 
-                if(target.CurrHP < 0)
-                {
-                    target.CurrHP = 0;
-                }
-                if (userChar == UnitAChar){
-                    UnitB = target;
+                    target.CurrHP -= total_damage;
+
+                    if(target.ElementRes[skill.Type] == Global.RESISTANCE_LEVELS[2])
+                    {
+                        SpeedBonus -= 1 * direction;
+                    }
+                    else if(target.ElementRes[skill.Type] == Global.RESISTANCE_LEVELS[0])
+                    {
+                        SpeedBonus += 2 * direction;
+                    }
+                    else if(target.ElementRes[skill.Type] == Global.RESISTANCE_LEVELS[3])
+                    {
+                        SpeedBonus += 2 * direction;
+                    }
                 }
                 else
                 {
-                    UnitA = target;
+                    SpeedBonus -= 2 * direction;
                 }
+            }
+
+            if(target.CurrHP < 0)
+            {
+                target.CurrHP = 0;
+            }
+            if (userChar == UnitAChar){
+                UnitB = target;
             }
             else
             {
-
+                UnitA = target;
             }
 
             if (userChar == UnitAChar)
@@ -923,13 +928,13 @@ namespace Skirmish
                 if(CursorY == 1)
                 {
                     tempX = XPos[CursorX];
-                    if(CurrentUnit == UnitAChar && CursorX < UnitA.BattleSkills.Count)
+                    if(CurrentUnit == UnitAChar && CursorX < UsableSkills.Count)
                     {
-                        FillDamageBox(UnitAChar, UnitA.BattleSkills[CursorX]);
+                        FillDamageBox(UnitAChar, UsableSkills[CursorX]);
                     }
-                    else if(CurrentUnit == UnitBChar  && CursorX < UnitB.BattleSkills.Count)
+                    else if(CurrentUnit == UnitBChar  && CursorX < UsableSkills.Count)
                     {
-                        FillDamageBox(UnitBChar, UnitB.BattleSkills[CursorX]);
+                        FillDamageBox(UnitBChar, UsableSkills[CursorX]);
                     }
                     else
                     {
@@ -964,13 +969,13 @@ namespace Skirmish
                 if(CursorY == 1)
                 {
                     tempX = XPos[CursorX];
-                    if(CurrentUnit == UnitAChar && CursorX < UnitA.BattleSkills.Count)
+                    if(CurrentUnit == UnitAChar && CursorX < UsableSkills.Count)
                     {
-                        FillDamageBox(UnitAChar, UnitA.BattleSkills[CursorX]);
+                        FillDamageBox(UnitAChar, UsableSkills[CursorX]);
                     }
-                    else if(CurrentUnit == UnitBChar && CursorX < UnitB.BattleSkills.Count)
+                    else if(CurrentUnit == UnitBChar && CursorX < UsableSkills.Count)
                     {
-                        FillDamageBox(UnitBChar, UnitB.BattleSkills[CursorX]);
+                        FillDamageBox(UnitBChar, UsableSkills[CursorX]);
                     }
                     else
                     {
@@ -994,13 +999,16 @@ namespace Skirmish
                     CursorX -= 1;
                     PointerNode.Position = new Vector2(XPos[CursorX], YPos[CursorY]);
 
-                    if(CurrentUnit == UnitAChar && CursorX < UnitA.BattleSkills.Count)
+                    if(CursorX < UsableSkills.Count && SkillInRange(UsableSkills[CursorX]))
                     {
-                        FillDamageBox(UnitAChar, UnitA.BattleSkills[CursorX]);
-                    }
-                    else if(CurrentUnit == UnitBChar && CursorX < UnitB.BattleSkills.Count)
-                    {
-                        FillDamageBox(UnitBChar, UnitB.BattleSkills[CursorX]);
+                        if(CurrentUnit == UnitAChar)
+                        {
+                            FillDamageBox(UnitAChar, UsableSkills[CursorX]);
+                        }
+                        else if(CurrentUnit == UnitBChar)
+                        {
+                            FillDamageBox(UnitBChar, UsableSkills[CursorX]);
+                        }
                     }
                     else
                     {
@@ -1016,13 +1024,16 @@ namespace Skirmish
                     CursorX += 1;
                     PointerNode.Position = new Vector2(XPos[CursorX], YPos[CursorY]);
 
-                    if(CurrentUnit == UnitAChar && CursorX < UnitA.BattleSkills.Count)
+                    if(CursorX < UsableSkills.Count && SkillInRange(UsableSkills[CursorX]))
                     {
-                        FillDamageBox(UnitAChar, UnitA.BattleSkills[CursorX]);
-                    }
-                    else if(CurrentUnit == UnitBChar && CursorX < UnitB.BattleSkills.Count)
-                    {
-                        FillDamageBox(UnitBChar, UnitB.BattleSkills[CursorX]);
+                        if(CurrentUnit == UnitAChar)
+                        {
+                            FillDamageBox(UnitAChar, UsableSkills[CursorX]);
+                        }
+                        else if(CurrentUnit == UnitBChar)
+                        {
+                            FillDamageBox(UnitBChar, UsableSkills[CursorX]);
+                        }
                     }
                     else
                     {
@@ -1057,26 +1068,26 @@ namespace Skirmish
                 {
                     if(CurrentUnit == UnitAChar)
                     {
-                        if(CursorX < UnitA.BattleSkills.Count && SkillInRange(UnitA.BattleSkills[CursorX]))
+                        if(CursorX < UsableSkills.Count && SkillInRange(UsableSkills[CursorX]))
                         {
-                            UseMove(UnitA.BattleSkills[CursorX], UnitAChar);
+                            UseMove(UsableSkills[CursorX], UnitAChar);
                         }
                         else
                         {
                             UnitADamageBox.Hide();
-                            //UseMove(UnitB.BattleSkills[CursorX], UserBChar);
+                            //UseMove(UsableSkills[CursorX], UserBChar);
                         }
                     }
                     else
                     {
-                        if(CursorX < UnitB.BattleSkills.Count && SkillInRange(UnitB.BattleSkills[CursorX]))
+                        if(CursorX < UsableSkills.Count && SkillInRange(UsableSkills[CursorX]))
                         {
-                            UseMove(UnitB.BattleSkills[CursorX], UnitBChar);
+                            UseMove(UsableSkills[CursorX], UnitBChar);
                         }
                         else
                         {
                             UnitBDamageBox.Hide();
-                            //UseMove(UnitB.BattleSkills[CursorX], UserBChar);
+                            //UseMove(UsableSkills, UserBChar);
                         }
                     }
                 }
@@ -1104,13 +1115,15 @@ namespace Skirmish
                 }
                 else if(CursorY == 2)
                 {
+                    UnitADamageBox.Visible = false;
+                    UnitBDamageBox.Visible = false;
                     SkillDescription.Text = "Halve next enemy attacks, heals 10% MP if final turn";
                 }
                 else
                 {
-                    if(CursorX < unit.BattleSkills.Count)
+                    if(CursorX < UsableSkills.Count && SkillInRange(UsableSkills[CursorX]))
                     {
-                        SkillDescription.Text = unit.BattleSkills[CursorX].Description;
+                        SkillDescription.Text = UsableSkills[CursorX].Description;
                     }
                     else
                     {

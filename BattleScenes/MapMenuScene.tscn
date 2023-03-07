@@ -53,27 +53,28 @@ tracks/0/keys = {
 "values": [ 2, 3 ]
 }
 
-[node name="MapMenuScene" type="Node2D"]
-z_index = 10
+[node name="MapMenuScene" type="CanvasLayer"]
 script = ExtResource( 2 )
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
-margin_right = 40.0
-margin_bottom = 40.0
+[node name="MapMenu" type="Node2D" parent="."]
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="MapMenu"]
 margin_right = 40.0
 margin_bottom = 204.0
 
-[node name="VictoryConditionBox" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MapMenu/MarginContainer"]
+margin_right = 40.0
+margin_bottom = 204.0
+
+[node name="VictoryConditionBox" type="MarginContainer" parent="MapMenu/MarginContainer/VBoxContainer"]
 margin_right = 40.0
 margin_bottom = 48.0
 custom_constants/margin_bottom = 48
 
-[node name="NinePatchRect" type="NinePatchRect" parent="MarginContainer/VBoxContainer/VictoryConditionBox"]
+[node name="NinePatchRect" type="NinePatchRect" parent="MapMenu/MarginContainer/VBoxContainer/VictoryConditionBox"]
 margin_right = 40.0
 
-[node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer/VictoryConditionBox/NinePatchRect"]
+[node name="TextureRect" type="TextureRect" parent="MapMenu/MarginContainer/VBoxContainer/VictoryConditionBox/NinePatchRect"]
 margin_left = 432.0
 margin_top = 200.0
 margin_right = 592.0
@@ -81,23 +82,23 @@ margin_bottom = 232.0
 texture = ExtResource( 1 )
 stretch_mode = 1
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/VictoryConditionBox/NinePatchRect/TextureRect"]
+[node name="Label" type="Label" parent="MapMenu/MarginContainer/VBoxContainer/VictoryConditionBox/NinePatchRect/TextureRect"]
 margin_right = 160.0
 margin_bottom = 32.0
 text = "Victory Condition"
 align = 1
 valign = 1
 
-[node name="DisplayMapBox" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
+[node name="DisplayMapBox" type="MarginContainer" parent="MapMenu/MarginContainer/VBoxContainer"]
 margin_top = 52.0
 margin_right = 40.0
 margin_bottom = 100.0
 custom_constants/margin_bottom = 48
 
-[node name="NinePatchRect" type="NinePatchRect" parent="MarginContainer/VBoxContainer/DisplayMapBox"]
+[node name="NinePatchRect" type="NinePatchRect" parent="MapMenu/MarginContainer/VBoxContainer/DisplayMapBox"]
 margin_right = 40.0
 
-[node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer/DisplayMapBox/NinePatchRect"]
+[node name="TextureRect" type="TextureRect" parent="MapMenu/MarginContainer/VBoxContainer/DisplayMapBox/NinePatchRect"]
 margin_left = 432.0
 margin_top = 200.0
 margin_right = 592.0
@@ -105,23 +106,23 @@ margin_bottom = 232.0
 texture = ExtResource( 1 )
 stretch_mode = 1
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/DisplayMapBox/NinePatchRect/TextureRect"]
+[node name="Label" type="Label" parent="MapMenu/MarginContainer/VBoxContainer/DisplayMapBox/NinePatchRect/TextureRect"]
 margin_right = 160.0
 margin_bottom = 32.0
 text = "Display Map"
 align = 1
 valign = 1
 
-[node name="Options" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
+[node name="Options" type="MarginContainer" parent="MapMenu/MarginContainer/VBoxContainer"]
 margin_top = 104.0
 margin_right = 40.0
 margin_bottom = 152.0
 custom_constants/margin_bottom = 48
 
-[node name="NinePatchRect" type="NinePatchRect" parent="MarginContainer/VBoxContainer/Options"]
+[node name="NinePatchRect" type="NinePatchRect" parent="MapMenu/MarginContainer/VBoxContainer/Options"]
 margin_right = 40.0
 
-[node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer/Options/NinePatchRect"]
+[node name="TextureRect" type="TextureRect" parent="MapMenu/MarginContainer/VBoxContainer/Options/NinePatchRect"]
 margin_left = 432.0
 margin_top = 200.0
 margin_right = 592.0
@@ -129,23 +130,23 @@ margin_bottom = 232.0
 texture = ExtResource( 1 )
 stretch_mode = 1
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/Options/NinePatchRect/TextureRect"]
+[node name="Label" type="Label" parent="MapMenu/MarginContainer/VBoxContainer/Options/NinePatchRect/TextureRect"]
 margin_right = 160.0
 margin_bottom = 32.0
 text = "Options"
 align = 1
 valign = 1
 
-[node name="EndTurn" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
+[node name="EndTurn" type="MarginContainer" parent="MapMenu/MarginContainer/VBoxContainer"]
 margin_top = 156.0
 margin_right = 40.0
 margin_bottom = 204.0
 custom_constants/margin_bottom = 48
 
-[node name="NinePatchRect" type="NinePatchRect" parent="MarginContainer/VBoxContainer/EndTurn"]
+[node name="NinePatchRect" type="NinePatchRect" parent="MapMenu/MarginContainer/VBoxContainer/EndTurn"]
 margin_right = 40.0
 
-[node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer/EndTurn/NinePatchRect"]
+[node name="TextureRect" type="TextureRect" parent="MapMenu/MarginContainer/VBoxContainer/EndTurn/NinePatchRect"]
 margin_left = 432.0
 margin_top = 200.0
 margin_right = 592.0
@@ -153,23 +154,23 @@ margin_bottom = 232.0
 texture = ExtResource( 1 )
 stretch_mode = 1
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/EndTurn/NinePatchRect/TextureRect"]
+[node name="Label" type="Label" parent="MapMenu/MarginContainer/VBoxContainer/EndTurn/NinePatchRect/TextureRect"]
 margin_right = 160.0
 margin_bottom = 32.0
 text = "End Turn"
 align = 1
 valign = 1
 
-[node name="Pointer" type="KinematicBody2D" parent="."]
+[node name="Pointer" type="KinematicBody2D" parent="MapMenu"]
 position = Vector2( 610, 216 )
 scale = Vector2( 2, 2 )
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Pointer"]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="MapMenu/Pointer"]
 anims/Left = SubResource( 1 )
 anims/RESET = SubResource( 2 )
 anims/Right = SubResource( 3 )
 
-[node name="Sprite" type="Sprite" parent="Pointer"]
+[node name="Sprite" type="Sprite" parent="MapMenu/Pointer"]
 texture = ExtResource( 3 )
 hframes = 2
 vframes = 2

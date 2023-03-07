@@ -1,6 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 using UnitInformation;
+using Main;
 
 namespace Skirmish
 {
@@ -9,7 +10,7 @@ namespace Skirmish
         private static string MapAIPattern;
         private static string BattleAIPattern;
 
-        public void Create(int start_x, int start_y, string new_name, int team, int movement_type, int level, int exp, int[] stats, BattleSkill standard_attack, BattleSkill[] battle_skills, PassiveSkill[] passive_skills, string[] elemental_res, int[] elemental_aff, string map_ai_pattern, string battle_ai_pattern)
+        public void Create(int start_x, int start_y, string new_name, int team, int movement_type, int level, int exp, int[] stats, BattleSkill standard_attack, ActiveSkill[] active_skills, PassiveSkill[] passive_skills, string[] elemental_res, int[] elemental_aff, string map_ai_pattern, string battle_ai_pattern)
         {
             MapAIPattern = map_ai_pattern;
             BattleAIPattern = battle_ai_pattern;
@@ -33,7 +34,7 @@ namespace Skirmish
             int[] statModsList = { 0, 0, 0, 0, 0, 0 };
             StatMods = new List<int>(statModsList);
             StandardAttack = standard_attack;
-            BattleSkills = new List<BattleSkill>(battle_skills);
+            ActiveSkills = new List<ActiveSkill>(active_skills);
             PassiveSkills = new List<PassiveSkill>(passive_skills);
             ElementAff = new List<int>(elemental_aff);
             ElementRes = new List<string>(elemental_res);

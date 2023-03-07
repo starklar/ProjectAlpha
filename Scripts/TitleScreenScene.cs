@@ -44,7 +44,7 @@ namespace TitleScreen
             GetTree().Root.AddChild(nextNode);
 
             Connect("StartSkirmishSignal", nextNode, "StartSkirmish");
-            EmitSignal("StartSkirmishSignal", "Ch1Skirmish", 0, 0, 22, 13);
+            EmitSignal("StartSkirmishSignal", "Ch1Skirmish", 0, 0, 21, 13);
 
             GetTree().Root.RemoveChild(this);
             this.QueueFree();

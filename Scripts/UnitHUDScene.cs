@@ -29,8 +29,8 @@ namespace Skirmish
             //HUD.Position = new Vector2(0f, 480f);
             //HUD.Position = new Vector2(0f, 0f);
 
-            this.GetParent().Connect("UnitCheckSignal", this, "UpdateLabels");
-            this.GetParent().Connect("ShowUnitHUDSignal", this, "Show");
+            this.GetParent().GetParent().Connect("UnitCheckSignal", this, "UpdateLabels");
+            this.GetParent().GetParent().Connect("ShowUnitHUDSignal", this, "Show");
         }
 
         private void UpdateLabels(UnitScene unit)

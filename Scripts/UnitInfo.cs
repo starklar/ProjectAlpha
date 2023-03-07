@@ -43,7 +43,7 @@ namespace UnitInformation
         8 - Support
         */
         public int[] ElementAff;
-
+        
         /*
         0 - Max HP: Maximum HP
         1 - Max MP: Maximum MP
@@ -74,7 +74,7 @@ namespace UnitInformation
                 int[] statsList = { 15, 15, 5, 5, 8, 6, 4, 3 };
                 int[] resList = { 1, 1, 1, 1, 1, 1, 1 };
                 int[] affList = { 1, 0, 4, 4, 4, 4, 2, 3, 1 };
-                BattleSkill atk = new BattleSkill("Attack", 0, 0, 2, 2, 3, 80, 5, (1, 1), false, null);
+                BattleSkill atk = new BattleSkill("Attack", "1 hit Physical Attack", 0, 0, 2, 1, 1, 1, 80, 0, (1, 1), false, null);
                 int[] bSkillList = {0, 1};
                 int[] pSkillList = {};
 
@@ -86,7 +86,9 @@ namespace UnitInformation
                 playerUnit.PassiveSkills = pSkillList;
 
                 PlayerTeam.Add(playerUnit);
-            }*/
+            }
+
+            SaveParty("Save1");*/
         }
 
         public int GetPartySize()

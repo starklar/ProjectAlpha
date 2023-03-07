@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Main;
 
 namespace Skirmish
 {
@@ -13,6 +13,8 @@ namespace Skirmish
         public const int MAX_MOVEMENT_TYPE = 100;
         public const int MAX_MOVEMENT_PENALTY = 100;
         public const float MAP_SCALE = 64f;
+        public const int HORIZONTAL_TILE_COUNT = (int) (WINDOW_WIDTH / MAP_SCALE);
+        public const int VERTICLE_TILE_COUNT = (int) (WINDOW_HEIGHT / MAP_SCALE);
         public const int FOLLOW_UP_THREASHOLD = 3;
         public const int MAX_SPEED_BONUS = 6;
         
@@ -45,17 +47,33 @@ namespace Skirmish
             new Tile("Sigil", 2, 20, MAX_MOVEMENT_TYPE, 1)
         };
 
-        public static readonly BattleSkill[] BATTLE_SKILLS = new BattleSkill[]
+        public static readonly String[] BATTLE_SKILL_EFFECTS = new String[]
         {
-            new BattleSkill("Ignis", "Magical Fire attack", 2, 8, 2, 1, 1, 2, 70, 0, (1, 1), true, null),
-            new BattleSkill("Glacies", "Magical Ice attack", 3, 8, 2, 1, 1, 2, 70, 0, (1, 1), true, null),
-            new BattleSkill("Terra", "Magical Earth attack", 4, 8, 2, 1, 1, 2, 70, 0, (1, 1), true, null),
-            new BattleSkill("Ventus", "Magical Wind attack", 5, 8, 2, 1, 1, 2, 70, 0, (1, 1), true, null),
-            new BattleSkill("Flare", "Long range Fire attack", 2, 15, 2, 4, 8, 10, 40, 0, (1, 1), true, null),
-            new BattleSkill("Comet", "Long range Ice attack", 3, 15, 2, 4, 8, 10, 40, 0, (1, 1), true, null),
-            new BattleSkill("Squall", "Long range Wind attack", 4, 15, 2, 4, 8, 10, 40, 0, (1, 1), true, null),
-            new BattleSkill("Meteor", "Long range Earth attack", 5, 15, 2, 4, 8, 10, 40, 0, (1, 1), true, null),
-            new BattleSkill("Star Drop", "Long range Aether attack", 6, 30, 2, 4, 8, 12, 50, 0, (1, 1), true, null),
+            "null",
+        };
+
+        public static readonly String[] SUPPORT_SKILL_EFFECTS = new String[]
+        {
+            "Healing",
+            "Stat Increase",
+            "Stat Decrease",
+        };
+
+        public static readonly ActiveSkill[] BATTLE_SKILLS = new ActiveSkill[]
+        {
+            new BattleSkill("Ignis", "Magical Fire attack", 2, 8, 1, 1, 2, 70, 0, (1, 1), true, BATTLE_SKILL_EFFECTS[0]),
+            new BattleSkill("Glacies", "Magical Ice attack", 3, 8, 1, 1, 2, 70, 0, (1, 1), true, BATTLE_SKILL_EFFECTS[0]),
+            new BattleSkill("Terra", "Magical Earth attack", 4, 8, 1, 1, 2, 70, 0, (1, 1), true, BATTLE_SKILL_EFFECTS[0]),
+            new BattleSkill("Ventus", "Magical Wind attack", 5, 8, 1, 1, 2, 70, 0, (1, 1), true, BATTLE_SKILL_EFFECTS[0]),
+            new BattleSkill("Flare", "Long range Fire attack", 2, 15, 4, 8, 10, 40, 0, (1, 1), true, BATTLE_SKILL_EFFECTS[0]),
+            new BattleSkill("Comet", "Long range Ice attack", 3, 15, 4, 8, 10, 40, 0, (1, 1), true, BATTLE_SKILL_EFFECTS[0]),
+            new BattleSkill("Squall", "Long range Wind attack", 4, 15, 4, 8, 10, 40, 0, (1, 1), true, BATTLE_SKILL_EFFECTS[0]),
+            new BattleSkill("Meteor", "Long range Earth attack", 5, 15, 4, 8, 10, 40, 0, (1, 1), true, BATTLE_SKILL_EFFECTS[0]),
+            new BattleSkill("Star Drop", "Long range Aether attack", 6, 30, 4, 8, 12, 50, 0, (1, 1), true, BATTLE_SKILL_EFFECTS[0]),
+            new SupportSkill("Heal", "Weak HP healing", 7, 9, 1, 1, 1, 2, 100, true, SUPPORT_SKILL_EFFECTS[0], 0),
+            new SupportSkill("Refresh", "Weak MP healing", 7, 10, 1, 1, 1, 2, 100, true, SUPPORT_SKILL_EFFECTS[0], 1),
+            new SupportSkill("Str Rally", "All allies in range increase strength by 3 until start of next turn", 8, 4, 3, 1, 2, 3, 100, true, SUPPORT_SKILL_EFFECTS[1], 4),
+            new SupportSkill("Menace Str", "All enemies in range decrease strength by 3 until start of next turn", 8, 4, 4, 1, 2, 3, 100, true, SUPPORT_SKILL_EFFECTS[2], 4),
         };
 
         public static readonly PassiveSkill[] PASSIVE_SKILLS = new PassiveSkill[]
@@ -78,10 +96,6 @@ namespace Skirmish
             {
                 total_power = total_power * 2 ;
             }
-            /*else if(target.ElementRes[skill.Type] == GlobalVars.RESISTANCE_LEVELS[3])
-            {
-                total_power = 0;
-            }*/
 
             if (skill.IsMagic)
             {
@@ -134,12 +148,13 @@ namespace Skirmish
             return total_accuracy;
         }
 
+        //Probably tweak either critical hit rate formula or critical damage multiplier
         public static int CalculateCritical(UnitScene user, UnitScene target, BattleSkill skill)
         {
             if(target.ElementRes[skill.Type] != RESISTANCE_LEVELS[2])
             {
                 int critrate = skill.CriticalRate + (user.Stats[3] + user.StatMods[1]) * 3;
-                int luckrate = (target.Stats[6] + target.StatMods[4]) * 3;
+                int luckrate = (target.Stats[6] + target.StatMods[4]) * 5;
                 int total_crit = critrate - luckrate;
 
                 if (total_crit < 0)
@@ -150,6 +165,37 @@ namespace Skirmish
             }
 
             return 0;
+        }
+
+        public static int CalculateHeal(UnitScene user, UnitScene target, BattleSkill skill)
+        {
+            int healAmount = 0;
+
+            if(skill.IsMagic)
+            {
+                healAmount = skill.Power + (user.Stats[4] + user.StatMods[2]) / 2;
+            }
+            else
+            {
+                healAmount = skill.Power + (user.Stats[3] + user.StatMods[1]) / 2;
+            }
+
+            if(skill.Effect == BATTLE_SKILL_EFFECTS[1])
+            {
+                if(target.CurrHP + healAmount > target.Stats[0])
+                {
+                    healAmount = target.Stats[0] - target.CurrHP;
+                }
+            }
+            else if(skill.Effect == BATTLE_SKILL_EFFECTS[2])
+            {
+                if(target.CurrMP + healAmount > target.Stats[1])
+                {
+                    healAmount = target.Stats[1] - target.CurrMP;
+                }
+            }
+
+            return healAmount;
         }
     }
 }

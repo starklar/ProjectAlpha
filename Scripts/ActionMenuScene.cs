@@ -1,6 +1,8 @@
+using System;
 using Godot;
 using System.Linq;
 using System.Collections.Generic;
+using Main;
 
 namespace Skirmish
 {
@@ -18,13 +20,15 @@ namespace Skirmish
         [Signal]
         delegate void SpawnAttackTilesSignal();
 
+        [Signal]
+        delegate void SpawnSupportTilesSignal(string skill_name);
+
         private Vector2 MenuLeftPos = new Vector2(0.0f, 200.0f);
         private Vector2 MenuRightPos = new Vector2(0.0f, 832.0f);
         private float LeftCursorPos = 214.0f;
         private float RightCursorPos = 810.0f;
         private int MainMenuSlots = 4;
         private float[] YPos = { 233.0f, 303.0f, 373.0f, 443.0f };
-        private string[] SupportTypes = { "Heal", "Status Heal", "Status Buff", "Status Debuff", "Resistance Buff", "Resistance Debuff" };
 
         private Node2D MainMenuNode;
         private Node2D SupportMenuNode;
@@ -32,7 +36,8 @@ namespace Skirmish
 
         private List<TextureRect> SkillNodes = new List<TextureRect>();
         private List<Label> SkillLabels = new List<Label>();
-        private List<Skill> SupportSkills = new List<Skill>();
+        private List<SupportSkill> SupportSkills = new List<SupportSkill>();
+        private List<bool> SupportSkillSelectable = new List<bool>();
 
         private bool IsMainMenu;
         private bool CanInteract;
@@ -60,8 +65,8 @@ namespace Skirmish
             var animatedSprite = GetNode<AnimationPlayer>("Pointer/AnimationPlayer");
             animatedSprite.Play("Right");
 
-            this.GetParent().Connect("ShowActionMenuSignal", this, "ShowMenu");
-            this.GetParent().Connect("GetSupportSkillsSignal", this, "GetSupportSkills");
+            this.GetParent().GetParent().Connect("ShowActionMenuSignal", this, "ShowMenu");
+            this.GetParent().GetParent().Connect("GetSupportSkillsSignal", this, "GetSupportSkills");
         }
 
         private void ShowMenu(string type)
@@ -99,11 +104,20 @@ namespace Skirmish
         private void GetSupportSkills(UnitScene unit)
         {
             SupportSkills.Clear();
-            foreach(Skill s in unit.BattleSkills)
+            SupportSkillSelectable.Clear();
+            foreach(ActiveSkill s in unit.ActiveSkills)
             {
-                if(SupportTypes.Contains(s.Effect))
+                if(s.Type >= 7)
                 {
-                    SupportSkills.Add(s);
+                    SupportSkills.Add((SupportSkill) s);
+                    if(unit.CurrMP >= s.Cost)
+                    {
+                        SupportSkillSelectable.Add(true);
+                    }
+                    else
+                    {
+                         SupportSkillSelectable.Add(false);
+                    }
                 }
             }
         }
@@ -194,46 +208,45 @@ namespace Skirmish
 
         private void SelectOption()
         {
-            if(IsMainMenu && PointerSlot == 0)
+            if(IsMainMenu)
+            {
+                if(PointerSlot == 0)
                 {
                     EmitSignal("UnitWaitSignal");
                     EmitSignal("EnableMapMovementSignal", 0);
                     HideAll();
                 }
-                else if(IsMainMenu && PointerSlot == 1)
+                else if(PointerSlot == 1)
                 {
                     EmitSignal("SpawnAttackTilesSignal");
                     EmitSignal("EnableMapMovementSignal", 2);
                     HideAll();
                 }
-                else if(IsMainMenu && PointerSlot == 2)
+                else if(PointerSlot == 2)
                 {
                     if(SupportSkills.Count > 0)
                     {
                         ShowSupportMenu();
                     }
                 }
-                else if(IsMainMenu && PointerSlot == 3)
+                else if(PointerSlot == 3)
                 {
-                    EmitSignal("EnableMapMovementSignal", 3);
+                    EmitSignal("EnableMapMovementSignal", 4);
                     HideAll();
                 }
-                else if(IsMainMenu == false && PointerSlot == 0)
+            }
+            else
+            {
+                if(PointerSlot < SupportSkills.Count)
                 {
-                    
+                    if(SupportSkillSelectable[PointerSlot])
+                    {
+                        EmitSignal("SpawnSupportTilesSignal", SupportSkills[PointerSlot].Name);
+                        EmitSignal("EnableMapMovementSignal", 3);
+                        HideAll();
+                    }
                 }
-                else if(IsMainMenu == false && PointerSlot == 1)
-                {
-                    
-                }
-                else if(IsMainMenu == false && PointerSlot == 2)
-                {
-                    
-                }
-                else if(IsMainMenu == false && PointerSlot == 3)
-                {
-                    
-                }
+            }
         }
 
         public override void _Input(InputEvent inputEvent)
@@ -259,7 +272,11 @@ namespace Skirmish
             }
             else if(inputEvent.IsActionPressed("move_cursor_down"))
             {
-                if ((IsMainMenu && PointerSlot == MainMenuSlots - 1) || (PointerSlot == SupportSkills.Count - 1))
+                if (IsMainMenu && PointerSlot == MainMenuSlots - 1)
+                {
+                    PointerSlot = 0;
+                }
+                else if(!IsMainMenu && PointerSlot == SupportSkills.Count - 1)
                 {
                     PointerSlot = 0;
                 }

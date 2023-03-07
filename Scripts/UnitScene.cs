@@ -1,6 +1,8 @@
+using System;
 using Godot;
 using System.Collections.Generic;
 using UnitInformation;
+using Main;
 
 namespace Skirmish
 {
@@ -22,7 +24,7 @@ namespace Skirmish
         public int EXP { get; set; }
         
         public BattleSkill StandardAttack { get; set; }
-        public List<BattleSkill> BattleSkills { get; set; }
+        public List<ActiveSkill> ActiveSkills { get; set; }
         public List<PassiveSkill> PassiveSkills { get; set; }
 
         //Weakness / Wk
@@ -110,9 +112,9 @@ namespace Skirmish
             StatMods = new List<int>(statModsList);
             
             //Temporary, non modified attack
-            StandardAttack = new BattleSkill("Attack", "1 hit Physical attack.", 0, 0, 2, 1, 1, 3, 80, 5, (1, 1), false, null);
+            StandardAttack = new BattleSkill("Attack", "1 hit Physical attack.", 0, 0, 1, 1, 3, 80, 0, (1, 1), false, null);
 
-            BattleSkills = new List<BattleSkill>();
+            ActiveSkills = new List<ActiveSkill>();
 
             PassiveSkills = new List<PassiveSkill>();
 
@@ -122,7 +124,7 @@ namespace Skirmish
 
             foreach(int idx in unit.BattleSkills)
             {
-                BattleSkills.Add(Global.BATTLE_SKILLS[idx]);
+                ActiveSkills.Add(Global.BATTLE_SKILLS[idx]);
             }
 
             foreach(int idx in unit.PassiveSkills)
@@ -196,5 +198,114 @@ namespace Skirmish
             AniPlayer.Stop();
         }
 
+
+        //Returns True if effect can be applied and will apply effect properly
+        //Else returns False
+        public bool ApplyEffect(ref UnitScene casting_unit, SupportSkill skill)
+        {
+            bool applied = false;
+            string effect = skill.Effect;
+
+            if(effect == Global.SUPPORT_SKILL_EFFECTS[0])
+            {
+                int hp_heal_ammount = 0;
+                int mp_heal_ammount = 0;
+
+                if(skill.Modifier == 0 || skill.Modifier == 2)
+                {
+                    if(skill.IsMagic)
+                    {
+                        hp_heal_ammount = casting_unit.Stats[4] + casting_unit.StatMods[2];
+                    }
+                    else
+                    {
+                        hp_heal_ammount = casting_unit.Stats[4] + casting_unit.StatMods[2];
+                    }
+
+                    if(CurrHP - Stats[0] >= hp_heal_ammount)
+                    {
+                        CurrHP += hp_heal_ammount;
+                        applied = true;
+                    }
+                    else if(CurrHP < Stats[0])
+                    {
+                        CurrHP = Stats[0];
+                        applied = true;
+                    }
+                }
+                if(skill.Modifier == 1 || skill.Modifier == 2)
+                {
+                    if(skill.IsMagic)
+                    {
+                        mp_heal_ammount = casting_unit.Stats[4] + casting_unit.StatMods[2];
+                    }
+                    else
+                    {
+                        mp_heal_ammount = casting_unit.Stats[4] + casting_unit.StatMods[2];
+                    }
+
+                    if(CurrMP - Stats[1] >= mp_heal_ammount)
+                    {
+                        CurrMP += mp_heal_ammount;
+                        applied = true;
+                    }
+                    else if(CurrMP < Stats[1])
+                    {
+                        CurrMP = Stats[1];
+                        applied = true;
+                    }
+                }
+            }
+            else if(effect == Global.SUPPORT_SKILL_EFFECTS[1])
+            {
+                if(skill.Modifier == 9)
+                {
+                    for(int i = 0; i < StatMods.Count; i++)
+                    {
+                        if(StatMods[i] < skill.Power)
+                        {
+                            StatMods[i] += skill.Power;
+                            applied = true;
+                        }
+                    }
+                }
+                else
+                {
+                    int modIndex = skill.Modifier - 3;
+
+                    if(StatMods[modIndex] < skill.Power)
+                    {
+                        StatMods[modIndex] += skill.Power;
+                        applied = true;
+                    }
+                }
+            }
+            else if(effect == Global.SUPPORT_SKILL_EFFECTS[2])
+            {
+                if(skill.Modifier == 9)
+                {
+                    for(int i = 0; i < StatMods.Count; i++)
+                    {
+                        if(StatMods[i] > -skill.Power)
+                        {
+                            StatMods[i] -= skill.Power;
+                            applied = true;
+                        }
+                    }
+                }
+                else
+                {
+                    int modIndex = skill.Modifier - 3;
+
+                    if(StatMods[modIndex] > -skill.Power)
+                    {
+                        StatMods[modIndex] -= skill.Power;
+                        applied = true;
+                    }
+                }
+            }
+
+            return applied;
+        }
     }
 }

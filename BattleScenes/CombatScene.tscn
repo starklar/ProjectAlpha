@@ -65,8 +65,6 @@ tracks/0/keys = {
 [node name="CombatScene" type="Node2D"]
 z_index = 200
 script = ExtResource( 2 )
-FollowUpThreshold = 2
-MaxSpeedBonus = 5
 
 [node name="UnitATerrainImg" type="TextureRect" parent="."]
 margin_right = 512.0
@@ -941,3 +939,6 @@ anims/Right = SubResource( 3 )
 texture = ExtResource( 12 )
 hframes = 2
 vframes = 2
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2( 512, 320 )
