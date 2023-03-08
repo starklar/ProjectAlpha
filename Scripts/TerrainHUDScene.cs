@@ -19,11 +19,10 @@ namespace Skirmish
             HPBonus = (Label) GetNode("HUD/MarginContainer/VBoxContainer/HpBox/NinePatchRect/HBoxContainer/NinePatchRect/HPBonus");
             MPBonus = (Label) GetNode("HUD/MarginContainer/VBoxContainer/MpBox/NinePatchRect/HBoxContainer/NinePatchRect/MPBonus");
             Node2D HUD = (Node2D) GetNode("HUD");
-            HUD.Position = new Vector2(864f, 0f);
-            HUD.Position = new Vector2(864f, 480f);
 
             this.GetParent().GetParent().Connect("TerrainCheckSignal", this, "UpdateLabels");
             this.GetParent().GetParent().Connect("ShowTerrainHUDSignal", this, "Show");
+            this.GetParent().GetParent().GetNode<Node2D>("Cursor").Connect("ChangeTerrainHUDSideSignal", this, "SwapSide");
         }
 
         private void UpdateLabels(string tile_type, int defence_bonus, int evasion_bonus, int hp_bonus, int mp_bonus)
@@ -45,6 +44,20 @@ namespace Skirmish
             else
             {
                 HUD.Visible = false;
+            }
+        }
+
+        private void SwapSide(bool move_up)
+        {
+            Node2D HUD = (Node2D) GetNode("HUD");
+
+            if(move_up)
+            {
+                HUD.Position = new Vector2(864f, 0f);
+            }
+            else
+            {
+                HUD.Position = new Vector2(864f, 480f);
             }
         }
     }

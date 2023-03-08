@@ -31,6 +31,7 @@ namespace Skirmish
 
             this.GetParent().GetParent().Connect("UnitCheckSignal", this, "UpdateLabels");
             this.GetParent().GetParent().Connect("ShowUnitHUDSignal", this, "Show");
+            this.GetParent().GetParent().GetNode<Node2D>("Cursor").Connect("ChangeUnitHUDSideSignal", this, "SwapSide");
         }
 
         private void UpdateLabels(UnitScene unit)
@@ -56,6 +57,20 @@ namespace Skirmish
             else
             {
                 HUD.Visible = false;
+            }
+        }
+
+        private void SwapSide(bool move_up)
+        {
+            Node2D HUD = (Node2D) GetNode("HUD");
+
+            if(move_up)
+            {
+                HUD.Position = new Vector2(0f, 0f);
+            }
+            else
+            {
+                HUD.Position = new Vector2(0f, 480f);
             }
         }
     }

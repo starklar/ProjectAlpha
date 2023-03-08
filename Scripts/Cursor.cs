@@ -11,6 +11,13 @@ namespace Skirmish
         [Signal]
         delegate void CursorMovedSignal(int x, int y);
 
+        [Signal]
+        delegate void ChangeUnitHUDSideSignal(bool move_up);
+
+        [Signal]
+        delegate void ChangeTerrainHUDSideSignal(bool move_up);
+
+
         private Camera2D Camera;
 
         public int MaxX { get; set; }
@@ -50,7 +57,6 @@ namespace Skirmish
 
         private void MoveTo(int new_x, int new_y)
         {
-            Console.Write("Hee ho");
             CurrX = new_x;
             CurrY = new_y;
             Position = new Vector2(CurrX * Global.MAP_SCALE + Global.MAP_SCALE, CurrY * Global.MAP_SCALE + Global.MAP_SCALE);
@@ -63,8 +69,6 @@ namespace Skirmish
             float currCursorX = this.Position.x + Global.WINDOW_WIDTH / 2;
             float currCursorY = this.Position.y + Global.WINDOW_HEIGHT / 2;
 
-            //float newCameraX = CurrX * Global.MAP_SCALE;
-            //float newCameraY = CurrY * Global.MAP_SCALE;
             float newCameraX = Camera.Position.x;
             float newCameraY = Camera.Position.y;
 
@@ -79,10 +83,14 @@ namespace Skirmish
 
             if(direction == "down" && currCursorY >= currCameraY + Global.WINDOW_HEIGHT * 3 / 4)
             {
+                EmitSignal("ChangeUnitHUDSideSignal", true);
+                EmitSignal("ChangeTerrainHUDSideSignal", true);
                 newCameraY = (CurrY - Global.VERTICLE_TILE_COUNT / 5) * Global.MAP_SCALE;
             }
             if(direction == "up" && currCursorY <= currCameraY + Global.WINDOW_HEIGHT * 1 / 4)
             {
+                EmitSignal("ChangeUnitHUDSideSignal", false);
+                EmitSignal("ChangeTerrainHUDSideSignal", false);
                 newCameraY = (CurrY + Global.VERTICLE_TILE_COUNT / 5 + 1) * Global.MAP_SCALE;
             }
 
