@@ -42,9 +42,9 @@ namespace Skirmish
 
         public static readonly Tile[] TILE_TYPES = new Tile[]
         {
-            new Tile("Grass", 0, 0, 0, 0),
-            new Tile("Wall", 0, 0, MAX_MOVEMENT_TYPE, MAX_MOVEMENT_PENALTY),
-            new Tile("Sigil", 2, 20, MAX_MOVEMENT_TYPE, 1)
+            new Tile("Grass", 0, 0, 0, 0, 0, 0),
+            new Tile("Wall", 0, 0, 0, 0, MAX_MOVEMENT_TYPE, MAX_MOVEMENT_PENALTY),
+            new Tile("Sigil", 2, 20, 10, 10, MAX_MOVEMENT_TYPE, 1)
         };
 
         public static readonly String[] BATTLE_SKILL_EFFECTS = new String[]

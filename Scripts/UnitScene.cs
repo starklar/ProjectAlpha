@@ -176,6 +176,30 @@ namespace Skirmish
             }
         }
 
+        public void TileHeal(int hp_heal_percent, int mp_heal_percent)
+        {
+            CurrHP += Stats[0] / hp_heal_percent;
+            CurrMP += Stats[1] / mp_heal_percent;
+
+            if(CurrHP > Stats[0])
+            {
+                CurrHP = Stats[0];
+            }
+            if(CurrHP <= 0)
+            {
+                CurrHP = 1;
+            }
+
+            if(CurrMP > Stats[1])
+            {
+                CurrMP = Stats[1];
+            }
+            if(CurrMP < 0)
+            {
+                CurrMP = 0;
+            }
+        }
+
         public void Place()
         {
             PrevX = CurrX;
@@ -197,7 +221,6 @@ namespace Skirmish
             Visible = false;
             AniPlayer.Stop();
         }
-
 
         //Returns True if effect can be applied and will apply effect properly
         //Else returns False

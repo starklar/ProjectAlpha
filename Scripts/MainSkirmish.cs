@@ -150,7 +150,7 @@ namespace Skirmish
             Tile currTile = Map.GetTile(x, y);
             CurrX = x;
             CurrY = y;
-            EmitSignal("TerrainCheckSignal", currTile.TileType, currTile.DefenceBonus, currTile.EvasionBonus);
+            EmitSignal("TerrainCheckSignal", currTile.TileType, currTile.DefenceBonus, currTile.EvasionBonus, currTile.HPHealBonus, currTile.MPHealBonus);
             
             if(currTile.CurrUnit != null)
             {
@@ -168,9 +168,9 @@ namespace Skirmish
             }
         }
 
-        public void ChangeTile(int x, int y, string object_name, string tile_name, int defence_bonus, int evasion_bonus, int allowed_types, int movement_penalty)
+        public void ChangeTile(int x, int y, string object_name, string tile_name, int defence_bonus, int evasion_bonus, int hp_heal_bonus, int mp_heal_bonus, int allowed_types, int movement_penalty)
         {
-            Map.ChangeTile(x, y, object_name, tile_name, defence_bonus, evasion_bonus, allowed_types, movement_penalty);
+            Map.ChangeTile(x, y, object_name, tile_name, defence_bonus, evasion_bonus, hp_heal_bonus, mp_heal_bonus, allowed_types, movement_penalty);
 
             var animatedSprite = GetNode<AnimatedSprite>(object_name);
             animatedSprite.Play();
@@ -546,24 +546,30 @@ namespace Skirmish
             {
                 foreach(UnitScene unit in PlayerTeam)
                 {
+                    Tile unit_tile = Map.GetTile(unit.CurrX, unit.CurrY);
                     unit.Refresh();
                     unit.StatModsRefresh();
+                    unit.TileHeal(unit_tile.HPHealBonus, unit_tile.MPHealBonus);
                 }
             }
             else if(Phase == 1)
             {
                 foreach(UnitScene unit in EnemyTeam)
                 {
+                    Tile unit_tile = Map.GetTile(unit.CurrX, unit.CurrY);
                     unit.Refresh();
                     unit.StatModsRefresh();
+                    unit.TileHeal(unit_tile.HPHealBonus, unit_tile.MPHealBonus);
                 }
             }
             else if(Phase == 2)
             {
                 foreach(UnitScene unit in OtherTeam)
                 {
+                    Tile unit_tile = Map.GetTile(unit.CurrX, unit.CurrY);
                     unit.Refresh();
                     unit.StatModsRefresh();
+                    unit.TileHeal(unit_tile.HPHealBonus, unit_tile.MPHealBonus);
                 }
             }
         }

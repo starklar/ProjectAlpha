@@ -195,9 +195,9 @@ namespace Skirmish
             }
         }
 
-        public void ChangeTile(int x, int y, string object_name, string tile_name, int defence_bonus, int evasion_bonus, int allowed_types, int movement_penalty)
+        public void ChangeTile(int x, int y, string object_name, string tile_name, int defence_bonus, int hp_heal_bonus, int mp_heal_bonus, int evasion_bonus, int allowed_types, int movement_penalty)
         {
-            Map[x, y] = new Tile(tile_name, defence_bonus, evasion_bonus, allowed_types, movement_penalty);
+            Map[x, y] = new Tile(tile_name, defence_bonus, evasion_bonus, hp_heal_bonus, mp_heal_bonus, allowed_types, movement_penalty);
         }
 
 
