@@ -440,13 +440,14 @@ namespace Skirmish
             {
                 EnableMapMovement(0);
                 SelectedUnit = null;
-                CheckEnemyRange();
             }
 
             if(Phase == 1 || Phase == 2)
             {
                 CPUMapAI();
             }
+
+            CheckEnemyRange();
 
             this.GetNode<Camera2D>("Camera2D").Current = true;
         }

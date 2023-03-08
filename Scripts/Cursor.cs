@@ -57,9 +57,27 @@ namespace Skirmish
 
         private void MoveTo(int new_x, int new_y)
         {
+            string dir = "";
+
+            if(new_y > CurrY && new_y > Global.VERTICLE_TILE_COUNT / 5)
+            {
+                EmitSignal("ChangeUnitHUDSideSignal", true);
+                EmitSignal("ChangeTerrainHUDSideSignal", true);
+                dir = "down";
+            }
+            else if(new_y < CurrY && new_y < MaxY - Global.VERTICLE_TILE_COUNT / 5)
+            {
+                EmitSignal("ChangeUnitHUDSideSignal", false);
+                EmitSignal("ChangeTerrainHUDSideSignal", false);
+                dir = "up";
+            }
+
             CurrX = new_x;
             CurrY = new_y;
-            Position = new Vector2(CurrX * Global.MAP_SCALE + Global.MAP_SCALE, CurrY * Global.MAP_SCALE + Global.MAP_SCALE);
+            Position = new Vector2(CurrX * Global.MAP_SCALE + Global.MAP_SCALE / 2, CurrY * Global.MAP_SCALE + Global.MAP_SCALE / 2);
+            
+            Camera.Position = new Vector2((CurrX - Global.HORIZONTAL_TILE_COUNT / 5) * Global.MAP_SCALE, (CurrY - Global.VERTICLE_TILE_COUNT / 5) * Global.MAP_SCALE);
+            MoveCamera(CurrX, CurrY, dir);
         }
 
         private void MoveCamera(int new_x, int new_y, string direction)

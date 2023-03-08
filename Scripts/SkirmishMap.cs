@@ -452,10 +452,8 @@ namespace Skirmish
                 {
                     foreach(Pos p in SelectableSupportTiles)
                     {
-                        Console.WriteLine("BBBBBBBBBBBBBBBBBBBB");
                         if(Map[p.X, p.Y].CurrUnit != null)
                         {
-                            Console.WriteLine("CCCCCCCCCCCCCCCCC");
                             if(team == 1)
                             {
                                 if(Map[p.X, p.Y].CurrUnit.Team == 0 || Map[p.X, p.Y].CurrUnit.Team == 2)
@@ -468,13 +466,10 @@ namespace Skirmish
                             }
                             else
                             {
-                                Console.WriteLine("DDDDDDDDDDDDDDDDDDDD");
                                 if(Map[p.X, p.Y].CurrUnit.Team == 1)
                                 {
-                                    Console.WriteLine("EEEEEEEEEEEEEEEEEEEEEEEE");
                                     if(Map[p.X, p.Y].CurrUnit.ApplyEffect(ref casting_user, CurrentSupportSkill))
                                     {
-                                        Console.WriteLine("AAAAAAAAAAAAAAAA");
                                         applicable = true;
                                     }
                                 }
@@ -901,18 +896,19 @@ namespace Skirmish
                             newG += 1;
                         }
 
-                        if(openList.Exists(x => x.P == newPos))
+                        if(openList.Exists(x => x.P.X == newPos.X && x.P.Y == newPos.Y))
                         {
-                            TileCost foundTC = openList.Find(x => x.P == newPos);
+                            TileCost foundTC = openList.Find(x => x.P.X == newPos.X && x.P.Y == newPos.Y);
                             if(newG < foundTC.G)
                             {
+                                Console.WriteLine(newG + " " + foundTC.G);
                                 openList.Remove(foundTC);
                                 openList.Add(new TileCost(newPos, copyPath, newG));
                             }
                         }
-                        else if(closedList.Exists(x => x.P == newPos))
+                        else if(closedList.Exists(x => x.P.X == newPos.X && x.P.Y == newPos.Y))
                         {
-                            TileCost foundTC = closedList.Find(x => x.P == newPos);
+                            TileCost foundTC = closedList.Find(x => x.P.X == newPos.X && x.P.Y == newPos.Y);
                             if(newG < foundTC.G)
                             {
                                 closedList.Remove(foundTC);
