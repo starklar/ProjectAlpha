@@ -327,6 +327,7 @@ namespace Skirmish
         {
             if(unit_char == UnitAChar)
             {
+                UnitADamageBox.Visible = false;
                 if(SkillInRange(skill))
                 {
                     UnitBDamageBox.Visible = true;
@@ -339,9 +340,14 @@ namespace Skirmish
                         UnitBHits.Text += "-" + skill.Hits.Item2;
                     }
                 }
+                else
+                {
+                    UnitBDamageBox.Visible = false;
+                }
             }
             else
             {
+                UnitBDamageBox.Visible = false;
                 if(SkillInRange(skill))
                 {
                     UnitADamageBox.Visible = true;
@@ -353,6 +359,10 @@ namespace Skirmish
                     {
                         UnitAHits.Text += "-" + skill.Hits.Item2;
                     }
+                }
+                else
+                {
+                    UnitADamageBox.Visible = false;
                 }
             }
         }
@@ -427,7 +437,10 @@ namespace Skirmish
             {
                 if(UnitA.Team == 0)
                 {
-                    UnitBDamageBox.Visible = true;
+                    if(SkillInRange(UnitA.StandardAttack))
+                    {
+                        UnitBDamageBox.Visible = true;
+                    }
                     ActionSelectionBox.Visible = true;
                     PointerNode.Visible = true;
                     SetProcessInput(true);
@@ -444,7 +457,10 @@ namespace Skirmish
             {
                 if(UnitB.Team == 0)
                 {
-                    UnitADamageBox.Visible = true;
+                    if(SkillInRange(UnitB.StandardAttack))
+                    {
+                        UnitADamageBox.Visible = true;
+                    }
                     ActionSelectionBox.Visible = true;
                     PointerNode.Visible = true;
                     SetProcessInput(true);
@@ -748,50 +764,31 @@ namespace Skirmish
             if(unit_char == UnitAChar)
             {
                 GuardingA = true;
+
+                int mpHeal = UnitA.Stats[1] / 10;
+
+                if(UnitA.CurrMP + mpHeal > UnitA.Stats[1])
+                {
+                    UnitA.CurrMP = UnitA.Stats[1];
+                }
+                else
+                {
+                    UnitA.CurrMP = UnitA.CurrMP + mpHeal;
+                }
             }
             else
             {
                 GuardingB = true;
-            }
 
-            bool heal = false;
+                int mpHeal = UnitB.Stats[1] / 10;
 
-            if(Phase == 2 && Math.Abs(SpeedBonus) < Global.FOLLOW_UP_THREASHOLD)
-            {
-                heal = true;
-            }
-            else if(Phase == 3)
-            {
-                heal = true;
-            }
-
-            if(heal)
-            {
-                if(unit_char == UnitAChar)
+                if(UnitB.CurrMP + mpHeal > UnitB.Stats[1])
                 {
-                    int mpHeal = UnitA.Stats[1] / 10;
-
-                    if(UnitA.CurrMP + mpHeal > UnitA.Stats[1])
-                    {
-                        UnitA.CurrMP = UnitA.Stats[1];
-                    }
-                    else
-                    {
-                        UnitA.CurrMP = UnitA.CurrMP + mpHeal;
-                    }
+                    UnitB.CurrMP = UnitB.Stats[1];
                 }
                 else
                 {
-                    int mpHeal = UnitB.Stats[1] / 10;
-
-                    if(UnitB.CurrMP + mpHeal > UnitB.Stats[1])
-                    {
-                        UnitB.CurrMP = UnitB.Stats[1];
-                    }
-                    else
-                    {
-                        UnitB.CurrMP = UnitB.CurrMP + mpHeal;
-                    }
+                    UnitB.CurrMP = UnitB.CurrMP + mpHeal;
                 }
             }
 
