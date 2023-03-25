@@ -662,6 +662,11 @@ namespace Skirmish
                     CPUMapAI();
                 }
             }
+
+            if(Map.GetTile(CurrX, CurrY).CurrUnit != null)
+            {
+                EmitSignal("UnitCheckSignal", Map.GetTile(CurrX, CurrY).CurrUnit);
+            }
         }
 
         public override void _Input(InputEvent inputEvent)

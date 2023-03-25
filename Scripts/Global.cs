@@ -167,7 +167,7 @@ namespace Skirmish
             return 0;
         }
 
-        public static int CalculateHeal(UnitScene user, UnitScene target, BattleSkill skill)
+        public static int CalculateHeal(UnitScene user, UnitScene target, SupportSkill skill)
         {
             int healAmount = 0;
 

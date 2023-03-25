@@ -55,6 +55,7 @@ namespace Skirmish
         private int TerrainEvasionBonusB;
         private int Phase;
         private string CurrentUnit;
+        private string ViewUnit;
         private int SpeedBonus;
 
         private bool GuardingA;
@@ -224,12 +225,16 @@ namespace Skirmish
                 SetSkillBoxes(UnitA);
                 SkillDescription.Text = UnitA.StandardAttack.Description;
                 FillDamageBox(UnitAChar, UnitA.StandardAttack);
+
+                ViewUnit = UnitAChar;
             }
             else if(UnitB.Team == 0)
             {
                 SetSkillBoxes(UnitB);
                 SkillDescription.Text = UnitB.StandardAttack.Description;
                 FillDamageBox(UnitBChar, UnitB.StandardAttack);
+
+                ViewUnit = UnitBChar;
             }
 
             Visible = true;
@@ -240,6 +245,8 @@ namespace Skirmish
 
         private void EndCombat()
         {
+            this.RemoveChild(GetNode(UnitA.UnitName + "CombatScene"));
+            this.RemoveChild(GetNode(UnitB.UnitName + "CombatScene"));
             Visible = false;
             SetProcessInput(false);
             EmitSignal("EndCombatSignal", UnitA, UnitB);
@@ -247,6 +254,8 @@ namespace Skirmish
 
         private void SetSkillBoxes(UnitScene unit)
         {
+            UsableSkills = new List<BattleSkill>(4);
+
             AttackElement.Texture = (Texture) ResourceLoader.Load("res://HUDImages/" + Global.ELEMENTS[unit.StandardAttack.Type] + "Icon.png");
             int attackAffValue = unit.ElementAff[unit.StandardAttack.Type];
 
@@ -759,13 +768,29 @@ namespace Skirmish
             SetProcessInput(false);
         }
 
+        private int GuardHealAmount(string unit_char)
+        {
+            int mpHeal = 0;
+
+            if(unit_char == UnitAChar)
+            {
+                mpHeal = (UnitA.Stats[7] + UnitA.StatMods[5]) / 2;
+            }
+            else
+            {
+                mpHeal = (UnitB.Stats[7] + UnitB.StatMods[5]) / 2;
+            }
+
+            return mpHeal;
+        }
+
         private void Guard(string unit_char)
         {
+            int mpHeal = GuardHealAmount(unit_char);
+
             if(unit_char == UnitAChar)
             {
                 GuardingA = true;
-
-                int mpHeal = UnitA.Stats[1] / 10;
 
                 if(UnitA.CurrMP + mpHeal > UnitA.Stats[1])
                 {
@@ -779,8 +804,6 @@ namespace Skirmish
             else
             {
                 GuardingB = true;
-
-                int mpHeal = UnitB.Stats[1] / 10;
 
                 if(UnitB.CurrMP + mpHeal > UnitB.Stats[1])
                 {
@@ -925,11 +948,11 @@ namespace Skirmish
                 if(CursorY == 1)
                 {
                     tempX = XPos[CursorX];
-                    if(CurrentUnit == UnitAChar && CursorX < UsableSkills.Count)
+                    if(ViewUnit == UnitAChar && CursorX < UsableSkills.Count)
                     {
                         FillDamageBox(UnitAChar, UsableSkills[CursorX]);
                     }
-                    else if(CurrentUnit == UnitBChar  && CursorX < UsableSkills.Count)
+                    else if(ViewUnit == UnitBChar  && CursorX < UsableSkills.Count)
                     {
                         FillDamageBox(UnitBChar, UsableSkills[CursorX]);
                     }
@@ -942,7 +965,7 @@ namespace Skirmish
                 else
                 {
                     tempX = MiddleXPos;
-                    if(CurrentUnit == UnitAChar)
+                    if(ViewUnit == UnitAChar)
                     {
                         FillDamageBox(UnitAChar, UnitA.StandardAttack);
                     }
@@ -966,11 +989,11 @@ namespace Skirmish
                 if(CursorY == 1)
                 {
                     tempX = XPos[CursorX];
-                    if(CurrentUnit == UnitAChar && CursorX < UsableSkills.Count)
+                    if(ViewUnit == UnitAChar && CursorX < UsableSkills.Count)
                     {
                         FillDamageBox(UnitAChar, UsableSkills[CursorX]);
                     }
-                    else if(CurrentUnit == UnitBChar && CursorX < UsableSkills.Count)
+                    else if(ViewUnit == UnitBChar && CursorX < UsableSkills.Count)
                     {
                         FillDamageBox(UnitBChar, UsableSkills[CursorX]);
                     }
@@ -998,11 +1021,11 @@ namespace Skirmish
 
                     if(CursorX < UsableSkills.Count && SkillInRange(UsableSkills[CursorX]))
                     {
-                        if(CurrentUnit == UnitAChar)
+                        if(ViewUnit == UnitAChar)
                         {
                             FillDamageBox(UnitAChar, UsableSkills[CursorX]);
                         }
-                        else if(CurrentUnit == UnitBChar)
+                        else
                         {
                             FillDamageBox(UnitBChar, UsableSkills[CursorX]);
                         }
@@ -1023,11 +1046,11 @@ namespace Skirmish
 
                     if(CursorX < UsableSkills.Count && SkillInRange(UsableSkills[CursorX]))
                     {
-                        if(CurrentUnit == UnitAChar)
+                        if(ViewUnit == UnitAChar)
                         {
                             FillDamageBox(UnitAChar, UsableSkills[CursorX]);
                         }
-                        else if(CurrentUnit == UnitBChar)
+                        else
                         {
                             FillDamageBox(UnitBChar, UsableSkills[CursorX]);
                         }
@@ -1041,64 +1064,107 @@ namespace Skirmish
             }
             else if (inputEvent.IsActionPressed("grid_select"))
             {
-                BattleSkill attack = null;
-                if(CursorY == 0)
+                if(CurrentUnit == ViewUnit)
                 {
-                    if(CurrentUnit == UnitAChar)
+                    BattleSkill attack = null;
+                    if(CursorY == 0)
                     {
-                        attack = UnitA.StandardAttack;
-                    }
-                    else
-                    {
-                        attack = UnitB.StandardAttack;
-                    }
-                    if(SkillInRange(attack))
-                    {
-                        UseMove(attack, CurrentUnit);
-                    }
-                }
-                else if(CursorY == 2)
-                {
-                    Guard(CurrentUnit);
-                }
-                else
-                {
-                    if(CurrentUnit == UnitAChar)
-                    {
-                        if(CursorX < UsableSkills.Count && SkillInRange(UsableSkills[CursorX]))
+                        if(CurrentUnit == UnitAChar)
                         {
-                            UseMove(UsableSkills[CursorX], UnitAChar);
+                            attack = UnitA.StandardAttack;
                         }
                         else
                         {
-                            UnitADamageBox.Hide();
-                            //UseMove(UsableSkills[CursorX], UserBChar);
+                            attack = UnitB.StandardAttack;
                         }
+                        if(SkillInRange(attack))
+                        {
+                            UseMove(attack, CurrentUnit);
+                        }
+                    }
+                    else if(CursorY == 2)
+                    {
+                        Guard(CurrentUnit);
                     }
                     else
                     {
-                        if(CursorX < UsableSkills.Count && SkillInRange(UsableSkills[CursorX]))
+                        if(CurrentUnit == UnitAChar)
                         {
-                            UseMove(UsableSkills[CursorX], UnitBChar);
+                            if(CursorX < UsableSkills.Count && SkillInRange(UsableSkills[CursorX]))
+                            {
+                                UseMove(UsableSkills[CursorX], UnitAChar);
+                            }
+                            else
+                            {
+                                UnitADamageBox.Hide();
+                                //UseMove(UsableSkills[CursorX], UserBChar);
+                            }
                         }
                         else
                         {
-                            UnitBDamageBox.Hide();
-                            //UseMove(UsableSkills, UserBChar);
+                            if(CursorX < UsableSkills.Count && SkillInRange(UsableSkills[CursorX]))
+                            {
+                                UseMove(UsableSkills[CursorX], UnitBChar);
+                            }
+                            else
+                            {
+                                UnitBDamageBox.Hide();
+                                //UseMove(UsableSkills, UserBChar);
+                            }
                         }
                     }
                 }
             }
             else if (inputEvent.IsActionPressed("grid_deselect"))
             {
+                ViewUnit = CurrentUnit;
 
+                CursorX = 0;
+                CursorY = 0;
+                PointerNode.Position = new Vector2(MiddleXPos, YPos[CursorY]);
+
+                if(ViewUnit == UnitBChar)
+                {
+                    ViewUnit = UnitBChar;
+                    SetSkillBoxes(UnitB);
+                    FillDamageBox(UnitBChar, UnitB.StandardAttack);
+                    SkillDescription.Text = UnitB.StandardAttack.Description;
+                }
+                else
+                {
+                    ViewUnit = UnitAChar;
+                    SetSkillBoxes(UnitA);
+                    FillDamageBox(UnitAChar, UnitA.StandardAttack);
+                    SkillDescription.Text = UnitA.StandardAttack.Description;
+                }
+            }
+            else if (inputEvent.IsActionPressed("grid_check_unit"))
+            {
+                CursorX = 0;
+                CursorY = 0;
+                PointerNode.Position = new Vector2(MiddleXPos, YPos[CursorY]);
+
+                if(ViewUnit == UnitAChar)
+                {
+                    ViewUnit = UnitBChar;
+                    SetSkillBoxes(UnitB);
+                    FillDamageBox(UnitBChar, UnitB.StandardAttack);
+                    SkillDescription.Text = UnitB.StandardAttack.Description;
+                }
+                else
+                {
+                    ViewUnit = UnitAChar;
+                    SetSkillBoxes(UnitA);
+                    FillDamageBox(UnitAChar, UnitA.StandardAttack);
+                    SkillDescription.Text = UnitA.StandardAttack.Description;
+                }
             }
 
             if(inputEvent.IsActionPressed("move_cursor_up") || inputEvent.IsActionPressed("move_cursor_down") || inputEvent.IsActionPressed("move_cursor_right") || inputEvent.IsActionPressed("move_cursor_left"))
             {
                 UnitScene unit;
 
-                if(CurrentUnit == UnitAChar)
+                if(ViewUnit == UnitAChar)
                 {
                     unit = UnitA;
                 }
@@ -1114,7 +1180,8 @@ namespace Skirmish
                 {
                     UnitADamageBox.Visible = false;
                     UnitBDamageBox.Visible = false;
-                    SkillDescription.Text = "Halve next enemy attacks, heals 10% MP if final turn";
+
+                    SkillDescription.Text = "Halve next enemy attacks and heals up to " + GuardHealAmount(ViewUnit) + " MP";
                 }
                 else
                 {
