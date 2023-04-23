@@ -476,8 +476,6 @@ namespace Skirmish
                             }
                         }
                     }
-
-                    return applicable;
                 }
                 else if(target == 3 || target == 5)
                 {
@@ -507,8 +505,6 @@ namespace Skirmish
                             }
                         }
                     }
-
-                    return applicable;
                 }
             }
 

@@ -242,7 +242,7 @@ namespace Skirmish
                     if(SupportSkillSelectable[PointerSlot])
                     {
                         EmitSignal("SpawnSupportTilesSignal", SupportSkills[PointerSlot].Name);
-                        EmitSignal("EnableMapMovementSignal", 3);
+                        EmitSignal("EnableMapMovementSignal", 4);
                         HideAll();
                     }
                 }

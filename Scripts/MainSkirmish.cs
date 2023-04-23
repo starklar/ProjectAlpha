@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnitInformation;
 using Main;
+using Data;
 
 using GameData;
 
@@ -15,6 +16,9 @@ namespace Skirmish
 
         [Export]
         public PackedScene UnitHUDScene;
+
+        [Export]
+        public PackedScene UnitFullHUDScene;
 
         [Export]
         public PackedScene ActionMenuScene;
@@ -41,6 +45,9 @@ namespace Skirmish
         delegate void ShowUnitHUDSignal(bool show);
 
         [Signal]
+        delegate void ShowUnitFullHUDSignal(bool show);
+
+        [Signal]
         delegate void ShowTerrainHUDSignal(bool show);
 
         [Signal]
@@ -52,6 +59,9 @@ namespace Skirmish
         [Signal]
         delegate void UpdateCombatForecastSignal(int distance, UnitScene unitA, int tileADefence, int tileAEvasion, UnitScene unitB, int tileBDefence, int tileBEvasion);
 
+        [Signal]
+        delegate void UpdateUnitFullHUDSignal(UnitScene unit);
+        
         [Signal]
         delegate void ShowCombatForecastSignal(bool show);
 
@@ -124,6 +134,7 @@ namespace Skirmish
             this.GetNode<Camera2D>("Camera2D").AddChild(ActionMenuScene.Instance());
             this.GetNode<Camera2D>("Camera2D").AddChild(CombatForecastScene.Instance());
             AddChild(CombatScene.Instance());
+            AddChild(UnitFullHUDScene.Instance());
             this.GetNode<Camera2D>("Camera2D").AddChild(MapMenuScene.Instance());
 
             var cursor = GetNode<Cursor>("Cursor");
@@ -150,6 +161,7 @@ namespace Skirmish
             this.GetNode<Camera2D>("Camera2D").GetNode<ActionMenuScene>("ActionMenuScene").Connect("SpawnSupportTilesSignal", this, "SpawnSupportTiles");
             this.GetNode<Camera2D>("Camera2D").GetNode<ActionMenuScene>("ActionMenuScene").Connect("EnableMapMovementSignal", this, "EnableMapMovement");
             GetNode<CombatScene>("CombatScene").Connect("EndCombatSignal", this, "EndCombat");
+            GetNode<UnitFullHUDScene>("UnitFullHUDScene").Connect("CloseUnitHUDSignal", this, "ReturnToCursorCamera");
             this.GetNode<Camera2D>("Camera2D").GetNode<MapMenuScene>("MapMenuScene").Connect("ReturnToMapSignal", this, "EnableMapMovement");
             this.GetNode<Camera2D>("Camera2D").GetNode<MapMenuScene>("MapMenuScene").Connect("EndTurnSignal", this, "EndTurn");
         }
@@ -226,7 +238,7 @@ namespace Skirmish
                 BattleSkill atk = new BattleSkill("Attack", "1 hit Physical attack.", 0, 0, 1, 1, 3, 80, 0, (1, 1), false, null);
                 ActiveSkill[] bSkills = {};
                 PassiveSkill[] pSkills = {};
-                enemyUnit.Create(9 - i * 2, 8 - i * 2, "Slime", 1, 0, 2, 0, statsList, atk, bSkills, pSkills, resList, affList, "Basic", "Basic");
+                enemyUnit.Create(9 - i * 2, 8 - i * 2, "Slime", 1, 2, 2, 0, statsList, atk, bSkills, pSkills, resList, affList, "Basic", "Basic");
                 Map.PlaceUnit(9 - i * 2, 8 - i * 2, enemyUnit);
 
                 GetNode<Node>("EnemyTeam").AddChild(enemyUnit);
@@ -345,6 +357,25 @@ namespace Skirmish
             Cursor.SetProcessInput(true);
         }
 
+        private void ReturnToCursorCamera()
+        {
+            EmitSignal("ShowTerrainHUDSignal", true);
+            if(Map.GetTile(CurrX, CurrY).CurrUnit != null)
+            {
+                EmitSignal("ShowUnitHUDSignal", true);
+                EmitSignal("UnitCheckSignal", Map.GetTile(CurrX, CurrY).CurrUnit);
+            }
+            else if(SelectedUnit != null)
+            {
+                EmitSignal("ShowUnitHUDSignal", true);
+                EmitSignal("UnitCheckSignal", SelectedUnit);
+            }
+
+            SetProcessInput(true);
+            Cursor.SetProcessInput(true);
+            GetNode<Camera2D>("Camera2D").Current = true;
+        }
+
         private void SelectedUnitUndoMove()
         {
             Map.RemoveUnit(SelectedUnit.CurrX, SelectedUnit.CurrY);
@@ -397,6 +428,8 @@ namespace Skirmish
 
         private void EndCombat(UnitScene unit_a, UnitScene unit_b)
         {
+            GetNode<Camera2D>("Camera2D").Current = true;
+            
             RemoveRangeTiles();
             Map.PlaceUnit(unit_a.CurrX, unit_a.CurrY, unit_a);
             Map.PlaceUnit(unit_b.CurrX, unit_b.CurrY, unit_b);
@@ -826,14 +859,28 @@ namespace Skirmish
             }
             else if (inputEvent.IsActionPressed("grid_check_unit"))
             {
-                if(SelectedUnit != null)
+                if(Map.GetUnit(CurrX, CurrY) != null)
                 {
-                    //Show unit info
-                }
-                else if(Map.GetUnit(CurrX, CurrY) != null)
-                {
+                    SetProcessInput(false);
+                    Cursor.SetProcessInput(false);
+                    GetNode<Camera2D>("Camera2D").Current = false;
+
+                    EmitSignal("ShowTerrainHUDSignal", false);
+                    EmitSignal("ShowUnitHUDSignal", false);
+                    EmitSignal("ShowUnitFullHUDSignal", true);
                     var map_curr_unit = Map.GetUnit(CurrX, CurrY);
-                    //Show unit info
+                    EmitSignal("UpdateUnitFullHUDSignal", map_curr_unit);
+                }
+                else if(SelectedUnit != null)
+                {
+                    SetProcessInput(false);
+                    Cursor.SetProcessInput(false);
+                    GetNode<Camera2D>("Camera2D").Current = false;
+
+                    EmitSignal("ShowTerrainHUDSignal", false);
+                    EmitSignal("ShowUnitHUDSignal", false);
+                    EmitSignal("ShowUnitFullHUDSignal", true);
+                    EmitSignal("UpdateUnitFullHUDSignal", SelectedUnit);
                 }
             }
 

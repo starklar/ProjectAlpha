@@ -4,7 +4,7 @@ using System;
 public class MapMenuScene : CanvasLayer
 {
     [Signal]
-    delegate void ReturnToMapSignal();
+    delegate void ReturnToMapSignal(int mode);
 
     [Signal]
     delegate void EndTurnSignal();

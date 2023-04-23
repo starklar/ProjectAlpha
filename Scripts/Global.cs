@@ -17,6 +17,13 @@ namespace Skirmish
         public const int VERTICLE_TILE_COUNT = (int) (WINDOW_HEIGHT / MAP_SCALE);
         public const int FOLLOW_UP_THREASHOLD = 3;
         public const int MAX_SPEED_BONUS = 6;
+
+        public static readonly string[] MOVEMENT_TYPE = new string[]{
+            "Mounted",
+            "Heavy",
+            "Foot",
+            "Flying"
+        };
         
         //Weakness / Wk
         //Neutral / --
