@@ -1,0 +1,17 @@
+[
+    {"Name": "Strike", "Type": 0, "Effect": "", "Cost": 0, "Power": 4, "MinRange": 1, "MaxRange": 1, "IsMagic": false, "Accuracy": 80, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Strike", "Type": 0, "Effect": "", "Cost": 0, "Power": 2, "MinRange": 1, "MaxRange": 1, "IsMagic": false, "Accuracy": 60, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Whisper", "Type": 0, "Effect": "", "Cost": 0, "Power": 2, "MinRange": 1, "MaxRange": 1, "IsMagic": true, "Accuracy": 90, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Ignis", "Type": 1, "Effect": "", "Cost": 3, "Power": 4, "MinRange": 1, "MaxRange": 1, "IsMagic": true, "Accuracy": 80, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Glacies", "Type": 2, "Effect": "", "Cost": 3, "Power": 4, "MinRange": 1, "MaxRange": 1, "IsMagic": true, "Accuracy": 80, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Ventus", "Type": 3, "Effect": "", "Cost": 3, "Power": 4, "MinRange": 1, "MaxRange": 1, "IsMagic": true, "Accuracy": 80, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Terra", "Type": 4, "Effect": "", "Cost": 3, "Power": 4, "MinRange": 1, "MaxRange": 1, "IsMagic": true, "Accuracy": 80, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Fulgur", "Type": 5, "Effect": "", "Cost": 3, "Power": 4, "MinRange": 1, "MaxRange": 1, "IsMagic": true, "Accuracy": 80, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Sanavi", "Type": 6, "Effect": "Health", "Cost": 3, "Power": 4, "MinRange": 1, "MaxRange": 1, "IsMagic": true, "Accuracy": 999, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Bestow Str", "Type": 7, "Effect": "Strength", "Cost": 1, "Power": 4, "MinRange": 1, "MaxRange": 2, "IsMagic": true, "Accuracy": 999, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Inspire Mov", "Type": 7, "Effect": "Movement", "Cost": 3, "Power": 1, "MinRange": 1, "MaxRange": 2, "IsMagic": true, "Accuracy": 999, "CriticalRate": 0, "TargetAll": true},
+    {"Name": "Condem Mag", "Type": 9, "Effect": "Magic", "Cost": 1, "Power": 6, "MinRange": 1, "MaxRange": 2, "IsMagic": true, "Accuracy": 999, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Oppress Speed", "Type": 9, "Effect": "Speed", "Cost": 3, "Power": 4, "MinRange": 1, "MaxRange": 2, "IsMagic": true, "Accuracy": 999, "CriticalRate": 0, "TargetAll": true},
+    {"Name": "Shove", "Type": 8, "Effect": "Move Ally", "Cost": 0, "Power": 1, "MinRange": 1, "MaxRange": 1, "IsMagic": true, "Accuracy": 999, "CriticalRate": 0, "TargetAll": false},
+    {"Name": "Style: Trick", "Type": 8, "Effect": "Move Self", "Cost": 0, "Power": 1, "MinRange": 1, "MaxRange": 1, "IsMagic": true, "Accuracy": 999, "CriticalRate": 0, "TargetAll": false}
+]

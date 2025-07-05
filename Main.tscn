@@ -1,0 +1,59 @@
+[gd_scene load_steps=13 format=3 uid="uid://uhmycwaedq0p"]
+
+[ext_resource type="PackedScene" uid="uid://dl0pb7m2mdkt8" path="res://Map.tscn" id="1_b5kmu"]
+[ext_resource type="Script" path="res://scripts/GameBoard.cs" id="1_lj3a2"]
+[ext_resource type="Script" path="res://scripts/Main.cs" id="1_yyjj7"]
+[ext_resource type="PackedScene" uid="uid://pvcjqxbcjc45" path="res://Cursor.tscn" id="2_iv5hx"]
+[ext_resource type="PackedScene" uid="uid://dwdxafphr04ox" path="res://UnitOverlay.tscn" id="3_l32n2"]
+[ext_resource type="Resource" uid="uid://bliy14cwu8e68" path="res://Grid.tres" id="3_nmx88"]
+[ext_resource type="PackedScene" uid="uid://hb6jhwbeuigi" path="res://UnitPath.tscn" id="3_qrf8u"]
+[ext_resource type="PackedScene" uid="uid://cq02geg6rbw3r" path="res://MapUi.tscn" id="8_tvs4n"]
+[ext_resource type="PackedScene" uid="uid://dyi4ep6ddn53u" path="res://UnitMenu.tscn" id="10_1yj0k"]
+[ext_resource type="PackedScene" uid="uid://dkiv0xmfc5dsh" path="res://TextBox.tscn" id="10_8f2gr"]
+[ext_resource type="PackedScene" uid="uid://diwig2xludw8b" path="res://CombatScene.tscn" id="12_3r8h5"]
+[ext_resource type="PackedScene" uid="uid://txbxtrld2daa" path="res://UseSkillMenu.tscn" id="12_15n2l"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_yyjj7")
+
+[node name="GameBoard" type="Node2D" parent="."]
+script = ExtResource("1_lj3a2")
+Grid = ExtResource("3_nmx88")
+
+[node name="Map" parent="GameBoard" groups=["CombatMapNodes"] instance=ExtResource("1_b5kmu")]
+
+[node name="UnitPath" parent="GameBoard" groups=["CombatMapNodes"] instance=ExtResource("3_qrf8u")]
+
+[node name="UnitOverlay" parent="GameBoard" groups=["CombatMapNodes"] instance=ExtResource("3_l32n2")]
+
+[node name="Cursor" parent="GameBoard" groups=["CombatMapNodes"] instance=ExtResource("2_iv5hx")]
+
+[node name="PlayerUnits" type="Node" parent="GameBoard"]
+
+[node name="EnemyUnits" type="Node" parent="GameBoard"]
+
+[node name="MapUI" parent="GameBoard" instance=ExtResource("8_tvs4n")]
+visible = false
+
+[node name="CombatScene" parent="GameBoard" instance=ExtResource("12_3r8h5")]
+visible = false
+offset_right = 1154.0
+offset_bottom = 648.0
+
+[node name="UnitMenu" parent="GameBoard" instance=ExtResource("10_1yj0k")]
+
+[node name="UseSkillMenu" parent="GameBoard" instance=ExtResource("12_15n2l")]
+visible = false
+
+[node name="Dialogue" type="Control" parent="GameBoard"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="TextBox" parent="GameBoard/Dialogue" instance=ExtResource("10_8f2gr")]
+visible = false
+layout_mode = 0
+offset_top = 480.0
+offset_right = 1152.0
+offset_bottom = 648.0

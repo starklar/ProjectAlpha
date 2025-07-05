@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://txbxtrld2daa"]
+
+[ext_resource type="Script" path="res://scripts/UseSkillMenu.cs" id="1_8slr8"]
+[ext_resource type="PackedScene" uid="uid://dkiv0xmfc5dsh" path="res://TextBox.tscn" id="1_s4p2y"]
+
+[node name="UseSkillMenu" type="MarginContainer"]
+offset_right = 700.0
+offset_bottom = 305.0
+script = ExtResource("1_8slr8")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="SkillsBox" type="VBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextBox" parent="HBoxContainer" instance=ExtResource("1_s4p2y")]
+layout_mode = 2

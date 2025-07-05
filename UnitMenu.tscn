@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://dyi4ep6ddn53u"]
+
+[ext_resource type="Script" path="res://scripts/UnitMenu.cs" id="1_j26na"]
+
+[node name="UnitMenu" type="MarginContainer"]
+offset_right = 468.0
+offset_bottom = 439.0
+scale = Vector2(0.25, 0.25)
+size_flags_vertical = 3
+script = ExtResource("1_j26na")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1

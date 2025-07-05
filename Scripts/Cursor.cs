@@ -1,177 +1,80 @@
 using Godot;
 using System;
 
-namespace Skirmish
-{
-    public class Cursor : Node2D
-    {
-        public int CurrX { get; set; }
-        public int CurrY { get; set; }
+[Tool]
+public partial class Cursor: Node2D{
+    [Export]
+    public float uiCooldown = 0.1f;
 
-        [Signal]
-        delegate void CursorMovedSignal(int x, int y);
+    public Vector2I Cell{
+        get{ return _cell; }
+        set{
+            _cell = _grid.Clamp(value);
+        }
+    }
 
-        [Signal]
-        delegate void ChangeUnitHUDSideSignal(bool move_up);
+    private Vector2I _cell;
 
-        [Signal]
-        delegate void ChangeTerrainHUDSideSignal(bool move_up);
+    private Timer _timer;
 
+    private Grid _grid  = new Grid();
 
-        private Camera2D Camera;
+    public override void _Ready(){
+        _timer = GetNode<Timer>("Timer");
+        _timer.WaitTime = uiCooldown;
+        Position = new Vector2(40.0f, 40.0f);
+        Cell = _grid.CalculateGridCoordinates(Position);
+        Position = _grid.CalculateMapPosition(Cell);
 
-        public int MaxX { get; set; }
-        public int MaxY { get; set; }
+        EventBus.Instance.enableCursor += SetInput;
+    }
 
-        private float MaxCameraX;
-        private float MaxCameraY;
-
-        public override void _Ready()
+    public override void _UnhandledInput(InputEvent inEvent){
+        if (inEvent.IsActionPressed("ui_accept"))
         {
-            
+            EventBus.Instance.EmitSignal("acceptPressed", Cell);
+            GetViewport().SetInputAsHandled();
+
+            return;
+        }
+        else if(inEvent.IsActionPressed("ui_select")){  //TEMP IN PLACE OF TITLE SCREEN
+            EventBus.Instance.EmitSignal("loadGame", "savefile1");
+            EventBus.Instance.EmitSignal("loadChapterData", "chapter1");
+
+            EventBus.Instance.EmitSignal("initializeBoard");
+            return;
         }
 
-        public void Start(int start_x, int start_y, int max_x, int max_y)
-        {
-            CurrX = start_x;
-            CurrY = start_y;
-            MaxX = max_x;
-            MaxY = max_y;
-            MaxCameraX = (MaxX - Global.HORIZONTAL_TILE_COUNT / 2) * Global.MAP_SCALE;
-            MaxCameraY = (MaxY - Global.VERTICLE_TILE_COUNT / 2) * Global.MAP_SCALE;
-
-            Position = new Vector2(CurrX * Global.MAP_SCALE + Global.MAP_SCALE / 2, CurrY * Global.MAP_SCALE + Global.MAP_SCALE / 2);
-
-            this.GetParent().Connect("MoveCursorSignal", this, "MoveTo");
-
-            Show();
-            
-            var animatedSprite = GetNode<AnimatedSprite>("AnimatedSprite");
-            animatedSprite.Play();
-
-            Camera = this.GetParent().GetNode<Camera2D>("Camera2D");
-            Camera.Current = true;
-            
-            MoveCamera(CurrX, CurrY, "");
+        if (!_timer.IsStopped()){
+            return;
         }
 
-        private void MoveTo(int new_x, int new_y)
-        {
-            string dir = "";
-
-            if(new_y > CurrY && new_y > Global.VERTICLE_TILE_COUNT / 5)
-            {
-                EmitSignal("ChangeUnitHUDSideSignal", true);
-                EmitSignal("ChangeTerrainHUDSideSignal", true);
-                dir = "down";
-            }
-            else if(new_y < CurrY && new_y < MaxY - Global.VERTICLE_TILE_COUNT / 5)
-            {
-                EmitSignal("ChangeUnitHUDSideSignal", false);
-                EmitSignal("ChangeTerrainHUDSideSignal", false);
-                dir = "up";
-            }
-
-            CurrX = new_x;
-            CurrY = new_y;
-            Position = new Vector2(CurrX * Global.MAP_SCALE + Global.MAP_SCALE / 2, CurrY * Global.MAP_SCALE + Global.MAP_SCALE / 2);
-            
-            Camera.Position = new Vector2((CurrX - Global.HORIZONTAL_TILE_COUNT / 5) * Global.MAP_SCALE, (CurrY - Global.VERTICLE_TILE_COUNT / 5) * Global.MAP_SCALE);
-            MoveCamera(CurrX, CurrY, dir);
+        if(inEvent.IsAction("ui_right")){
+            Position += Vector2I.Right * _grid.CellSize;
+        }
+        if(inEvent.IsAction("ui_left")){
+            Position += Vector2I.Left * _grid.CellSize;
+        }
+        if(inEvent.IsAction("ui_up")){
+            Position += Vector2I.Up * _grid.CellSize;
+        }
+        if(inEvent.IsAction("ui_down")){
+            Position += Vector2I.Down * _grid.CellSize;
         }
 
-        private void MoveCamera(int new_x, int new_y, string direction)
-        {
-            float currCameraX = Camera.Position.x;
-            float currCameraY = Camera.Position.y;
-            float currCursorX = this.Position.x + Global.WINDOW_WIDTH / 2;
-            float currCursorY = this.Position.y + Global.WINDOW_HEIGHT / 2;
+        Cell = _grid.CalculateGridCoordinates(Position);
+        Position = _grid.CalculateMapPosition(Cell);
 
-            float newCameraX = Camera.Position.x;
-            float newCameraY = Camera.Position.y;
+        EventBus.Instance.EmitSignal("moved", Cell);
 
-            if(direction == "right" && currCursorX >= currCameraX + Global.WINDOW_WIDTH * 3 / 4)
-            {
-                newCameraX = (CurrX - Global.HORIZONTAL_TILE_COUNT / 5) * Global.MAP_SCALE;
-            }
-            if(direction == "left" && currCursorX <= currCameraX + Global.WINDOW_WIDTH * 1 / 4)
-            {
-                newCameraX = (CurrX + Global.HORIZONTAL_TILE_COUNT / 5 + 1) * Global.MAP_SCALE;
-            }
+        _timer.Start();
+    }
 
-            if(direction == "down" && currCursorY >= currCameraY + Global.WINDOW_HEIGHT * 3 / 4)
-            {
-                EmitSignal("ChangeUnitHUDSideSignal", true);
-                EmitSignal("ChangeTerrainHUDSideSignal", true);
-                newCameraY = (CurrY - Global.VERTICLE_TILE_COUNT / 5) * Global.MAP_SCALE;
-            }
-            if(direction == "up" && currCursorY <= currCameraY + Global.WINDOW_HEIGHT * 1 / 4)
-            {
-                EmitSignal("ChangeUnitHUDSideSignal", false);
-                EmitSignal("ChangeTerrainHUDSideSignal", false);
-                newCameraY = (CurrY + Global.VERTICLE_TILE_COUNT / 5 + 1) * Global.MAP_SCALE;
-            }
+    public override void _Draw(){
+        DrawRect(new Rect2(-_grid.CellSize / 2, _grid.CellSize), new Color(0, 0, 1, 1), false, 2.0f);
+    }
 
-            if(newCameraX < Global.WINDOW_WIDTH / 2)
-            {
-                newCameraX = Global.WINDOW_WIDTH / 2;
-            }
-            else if(newCameraX > MaxCameraX)
-            {
-                newCameraX = MaxCameraX;
-            }
-
-            if(newCameraY < Global.WINDOW_HEIGHT / 2)
-            {
-                newCameraY = Global.WINDOW_HEIGHT / 2;
-            }
-            else if(newCameraY > MaxCameraY)
-            {
-                newCameraY = MaxCameraY;
-            }
-
-            Camera.Position = new Vector2(newCameraX, newCameraY);
-        }
-
-        public override void _Input(InputEvent inputEvent)
-        {
-            bool moved = false;
-            string direction = "";
-
-            if (inputEvent.IsActionPressed("move_cursor_right") && CurrX < MaxX - 1)
-            {
-                CurrX += 1;
-                direction = "right";
-                moved = true;
-            }
-
-            if (inputEvent.IsActionPressed("move_cursor_left") && CurrX > 0)
-            {
-                CurrX -= 1;
-                direction = "left";
-                moved = true;
-            }
-
-            if (inputEvent.IsActionPressed("move_cursor_down") && CurrY < MaxY - 1)
-            {
-                CurrY += 1;
-                direction = "down";
-                moved = true;
-            }
-
-            if (inputEvent.IsActionPressed("move_cursor_up") && CurrY > 0)
-            {
-                CurrY -= 1;
-                direction = "up";
-                moved = true;
-            }
-
-            if(moved == true)
-            {
-                Position = new Vector2(CurrX * Global.MAP_SCALE + Global.MAP_SCALE / 2, CurrY * Global.MAP_SCALE + Global.MAP_SCALE / 2);
-                MoveCamera(CurrX, CurrY, direction);
-                EmitSignal("CursorMovedSignal", CurrX, CurrY);
-            }
-        }
+    private void SetInput(bool inputEnabled){
+        SetProcessUnhandledInput(inputEnabled);
     }
 }

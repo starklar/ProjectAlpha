@@ -1,0 +1,61 @@
+[gd_scene load_steps=6 format=3 uid="uid://diwig2xludw8b"]
+
+[ext_resource type="Script" path="res://scripts/CombatScene.cs" id="1_4iw40"]
+[ext_resource type="PackedScene" uid="uid://x21ywsqlh0lm" path="res://CombatUnit.tscn" id="2_b77x4"]
+[ext_resource type="PackedScene" uid="uid://dplqiw8v77h47" path="res://Bar.tscn" id="2_ehacy"]
+[ext_resource type="Texture2D" uid="uid://b5sv4lwgvr0qs" path="res://unit_overlay_tileset.svg" id="2_h20ia"]
+[ext_resource type="Texture2D" uid="uid://ddont3bcws5v7" path="res://background.png" id="3_15nj6"]
+
+[node name="CombatScene" type="MarginContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_4iw40")
+
+[node name="Backgrounds" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="LeftBackground" type="TextureRect" parent="Backgrounds"]
+custom_minimum_size = Vector2(575, 200)
+layout_mode = 2
+texture = ExtResource("2_h20ia")
+
+[node name="RightBackground" type="TextureRect" parent="Backgrounds"]
+custom_minimum_size = Vector2(575, 200)
+layout_mode = 2
+texture = ExtResource("3_15nj6")
+
+[node name="LeftBars" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+
+[node name="HealthBar" parent="LeftBars" instance=ExtResource("2_ehacy")]
+layout_mode = 2
+
+[node name="ManaBar" parent="LeftBars" instance=ExtResource("2_ehacy")]
+layout_mode = 2
+
+[node name="RightBars" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+alignment = 1
+
+[node name="HealthBar" parent="RightBars" instance=ExtResource("2_ehacy")]
+layout_mode = 2
+
+[node name="ManaBar" parent="RightBars" instance=ExtResource("2_ehacy")]
+layout_mode = 2
+
+[node name="CombatUnits" type="Node2D" parent="."]
+
+[node name="LeftCombatUnit" parent="CombatUnits" instance=ExtResource("2_b77x4")]
+position = Vector2(300, 400)
+
+[node name="RightCombatUnit" parent="CombatUnits" instance=ExtResource("2_b77x4")]
+position = Vector2(880, 400)

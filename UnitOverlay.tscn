@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3 uid="uid://dwdxafphr04ox"]
+
+[ext_resource type="Texture2D" uid="uid://c087mh2udp5y6" path="res://MapOverlay.png" id="1_vovee"]
+[ext_resource type="Script" path="res://scripts/UnitOverlay.cs" id="2_nxxl4"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_fosiv"]
+texture = ExtResource("1_vovee")
+texture_region_size = Vector2i(64, 64)
+0:0/next_alternative_id = 2
+0:0/0 = 0
+0:0/1 = 1
+1:0/next_alternative_id = 2
+1:0/0 = 0
+1:0/1 = 1
+2:0/next_alternative_id = 2
+2:0/0 = 0
+2:0/1 = 1
+3:0/next_alternative_id = 2
+3:0/0 = 0
+3:0/1 = 1
+4:0/next_alternative_id = 2
+4:0/0 = 0
+4:0/1 = 1
+
+[sub_resource type="TileSet" id="TileSet_d585j"]
+tile_size = Vector2i(64, 64)
+terrain_set_0/mode = 0
+terrain_set_0/terrain_0/name = "Terrain 0"
+terrain_set_0/terrain_0/color = Color(0.5, 0.34375, 0.25, 1)
+sources/0 = SubResource("TileSetAtlasSource_fosiv")
+
+[node name="UnitOverlay" type="TileMapLayer"]
+modulate = Color(1, 1, 1, 0.356863)
+scale = Vector2(1.25, 1.25)
+tile_set = SubResource("TileSet_d585j")
+script = ExtResource("2_nxxl4")
